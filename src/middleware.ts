@@ -13,6 +13,14 @@ const isPublicRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, request) => {
   if (isMockClerk) {
+    if (!isPublicRoute(request)) {
+      const session = request.cookies.get('fc_session');
+      if (!session) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/sign-in';
+        return NextResponse.redirect(url);
+      }
+    }
     return NextResponse.next();
   }
   
@@ -20,6 +28,7 @@ export default clerkMiddleware(async (auth, request) => {
     await auth.protect();
   }
 });
+
 
 export const config = {
   matcher: [

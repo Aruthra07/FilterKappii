@@ -2,53 +2,12 @@ import { db } from './db';
 import { getEmbedding, cosineSimilarity } from './embeddings';
 import { upsertSignal, searchSimilarSignals } from './qdrant';
 import { generateText } from './llm';
-
-// Resend Email Setup
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
+import { emailService } from './services/email';
 
 export async function sendEmail(to: string, subject: string, html: string) {
-  if (RESEND_API_KEY && RESEND_API_KEY !== 'mock-resend-key') {
-    try {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-          from: 'FilterCoffee.ai <briefings@filtercoffee.ai>',
-          to,
-          subject,
-          html,
-        }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        await db.emailLog.create({
-          data: { email: to, subject, status: 'SENT' },
-        });
-        return data;
-      } else {
-        throw new Error(data.message || 'Resend error');
-      }
-    } catch (error: any) {
-      console.error(`Failed to send email to ${to}:`, error);
-      await db.emailLog.create({
-        data: { email: to, subject, status: 'FAILED', error: error.message },
-      });
-    }
-  } else {
-    // Offline / Mock Local Logger
-    console.log(`[EMAIL SEND SIMULATION]`);
-    console.log(`To: ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Content HTML length: ${html.length} chars`);
-    console.log(`--------------------------------------------------`);
-    await db.emailLog.create({
-      data: { email: to, subject, status: 'SENT' },
-    });
-  }
+  return emailService.sendEmail(to, subject, html);
 }
+
 
 // Simple XML helper to extract RSS items without heavy libraries
 function parseRss(xmlText: string) {
@@ -134,12 +93,47 @@ export async function ingestSource(sourceId: string) {
         category = 'Career';
       }
 
-      // 5. Store in Prisma Database
+      // 5. Generate AI Summarization structured JSON
+      let structuredContent = item.content;
+      try {
+        const systemPrompt = `You are a premium AI news intelligence summarizer for FilterCoffee.ai.
+Your goal is to parse raw news signals and output a JSON object representing executive-level insights.
+The JSON object must have EXACTLY these fields:
+- "body": A clear description of the development (1-2 sentences).
+- "tldr": A very concise, direct summary of the event (1 sentence).
+- "whyItMatters": A brief analysis of why this is important for the industry or market (1-2 sentences).
+- "careerImpact": A brief analysis of how it changes hiring demand or trending skills (1 sentence).
+- "businessImpact": A brief analysis of operational or strategic corporate effects (1 sentence).
+- "confidenceScore": An integer from 10 to 100 indicating confidence in the news facts.
+- "credibilityScore": An integer from 10 to 100 indicating source credibility.
+
+Output ONLY the raw JSON. Do not write markdown tags or block quotes.`;
+
+        const prompt = `Title: ${item.title}\nContent: ${item.content}\nSource: ${source.name}`;
+
+        const aiSummary = await generateText({ systemPrompt, prompt });
+        const cleanJson = aiSummary.trim().replace(/^```json/, '').replace(/```$/, '').trim();
+        JSON.parse(cleanJson); // validate
+        structuredContent = cleanJson;
+      } catch (e) {
+        console.warn(`[Ingestion] AI summarization failed for "${item.title}", saving fallback structure:`, e);
+        structuredContent = JSON.stringify({
+          body: item.content,
+          tldr: item.title,
+          whyItMatters: 'Industry intelligence signal update.',
+          careerImpact: 'Upskilling in AI and system engineering recommended.',
+          businessImpact: 'General operational optimization.',
+          confidenceScore: 85,
+          credibilityScore: 85
+        });
+      }
+
+      // 6. Store in Prisma Database
       const newSignal = await db.signal.create({
         data: {
           sourceId: source.id,
           title: item.title,
-          content: item.content,
+          content: structuredContent,
           url: item.url,
           publishedAt: item.publishedAt,
           category,

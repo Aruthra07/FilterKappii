@@ -15,7 +15,10 @@ import {
   Radio, 
   FolderHeart,
   ChevronRight,
-  MailOpen
+  MailOpen,
+  BookOpen,
+  Briefcase,
+  Search
 } from 'lucide-react';
 import { UserButton, SignOutButton } from '@clerk/nextjs';
 import { trpc } from '@/utils/trpc';
@@ -33,10 +36,17 @@ export default function DashboardLayout({
   const { data: subData, isLoading } = trpc.billing.getSubscriptionStatus.useQuery();
 
   const links = [
-    { name: 'Morning Briefings', href: '/dashboard', icon: MailOpen },
-    { name: 'Signal Feed', href: '/dashboard/signals', icon: Radio },
+    { name: 'Brewing Room', href: '/dashboard', icon: Coffee },
+    { name: 'Brew Feed', href: '/brew-feed', icon: Radio },
+    { name: 'Coffee Search', href: '/coffee-search', icon: Search },
+    { name: 'AI Roast Tracker', href: '/model-tracker', icon: Cpu },
+    { name: 'AI Companies', href: '/companies', icon: Coffee },
+    { name: 'Career Roast', href: '/career-roast', icon: Briefcase },
+    { name: 'Funding Tracker', href: '/funding', icon: CreditCard },
+    { name: 'Research Hub', href: '/research', icon: BookOpen },
+    { name: 'Market Signals', href: '/market-signals', icon: TrendingUp },
     { name: 'Topic Feeds', href: '/dashboard/topics', icon: FolderHeart },
-    { name: 'Bookmarks', href: '/dashboard/bookmarks', icon: Bookmark },
+    { name: 'Saved Beans', href: '/dashboard/bookmarks', icon: Bookmark },
     { name: 'Billing & Plans', href: '/dashboard/billing', icon: CreditCard },
   ];
 
@@ -81,7 +91,7 @@ export default function DashboardLayout({
             })}
 
             {/* Admin link - Check database user role */}
-            {!isLoading && subData && (
+            {!isLoading && subData && subData.role === 'ADMIN' && (
               <Link
                 href="/dashboard/admin"
                 className={`flex items-center justify-between px-3 py-2 rounded-md text-xs font-semibold tracking-wide transition-all ${
@@ -92,7 +102,7 @@ export default function DashboardLayout({
               >
                 <div className="flex items-center gap-2.5">
                   <ShieldAlert className="w-4 h-4 shrink-0" />
-                  <span>Admin Console</span>
+                  <span>Brewing Insights</span>
                 </div>
               </Link>
             )}
@@ -101,35 +111,44 @@ export default function DashboardLayout({
 
         {/* User Footer */}
         <div className="p-4 border-t border-coffee-border/20 bg-coffee-dark/40 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             {isMockClerk ? (
-              <div className="w-8 h-8 rounded-full bg-coffee-border flex items-center justify-center border border-coffee-accent/30 text-xs font-bold text-coffee-accent font-display">
-                FC
+              <div className="w-8 h-8 rounded-full bg-coffee-border flex items-center justify-center border border-coffee-accent/30 text-xs font-bold text-coffee-accent font-display shrink-0">
+                {(subData?.name || 'FC').substring(0, 2).toUpperCase()}
               </div>
             ) : (
-              <UserButton />
+              <div className="shrink-0">
+                <UserButton />
+              </div>
             )}
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-bold text-coffee-cream truncate">Founder</span>
-              <span className="text-[9px] font-mono text-coffee-text-muted truncate">founder@filtercoffee.ai</span>
+              <span className="text-xs font-bold text-coffee-cream truncate">
+                {isLoading ? 'Loading...' : subData?.name || 'User'}
+              </span>
+              <span className="text-[9px] font-mono text-coffee-text-muted truncate">
+                {isLoading ? '...' : subData?.email || ''}
+              </span>
             </div>
           </div>
           {isMockClerk ? (
             <Link
               href="/"
               title="Sign Out (Mock)"
-              className="text-coffee-text-muted hover:text-coffee-accent transition-colors"
+              className="text-coffee-text-muted hover:text-coffee-accent transition-colors ml-2 shrink-0"
             >
               <LogOut className="w-4 h-4" />
             </Link>
           ) : (
-            <SignOutButton>
-              <button className="text-coffee-text-muted hover:text-coffee-accent transition-colors">
-                <LogOut className="w-4 h-4" />
-              </button>
-            </SignOutButton>
+            <div className="ml-2 shrink-0">
+              <SignOutButton>
+                <button className="text-coffee-text-muted hover:text-coffee-accent transition-colors">
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </SignOutButton>
+            </div>
           )}
         </div>
+
       </aside>
 
       {/* Main Content Area */}

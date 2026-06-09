@@ -263,35 +263,199 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Section 8: Trending Skills Cloud */}
-      <section className="py-20 px-6 md:px-12 bg-coffee-dark/20 border-y border-coffee-border/10">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="text-2xl md:text-3xl font-display font-bold text-coffee-cream">Trending Skill & Platform Signals</h2>
-          <p className="text-coffee-text-muted text-sm max-w-xl mx-auto">
-            Our ingestion pipelines run vector-clustering algorithms on job descriptions and commits to discover rising skills.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3 max-w-2xl mx-auto">
-            <span className="px-4 py-2 rounded-lg bg-coffee-card border border-coffee-border/50 text-xs font-semibold text-coffee-cream flex items-center gap-1.5">
-              Rust <span className="text-[#4e8f69] font-bold">+28.4%</span>
-            </span>
-            <span className="px-4 py-2 rounded-lg bg-coffee-card border border-coffee-border/50 text-xs font-semibold text-coffee-cream flex items-center gap-1.5">
-              AI Orchestration <span className="text-[#4e8f69] font-bold">+42.6%</span>
-            </span>
-            <span className="px-4 py-2 rounded-lg bg-coffee-card border border-coffee-border/50 text-xs font-semibold text-coffee-cream flex items-center gap-1.5">
-              Next.js 15 <span className="text-[#4e8f69] font-bold">+18.1%</span>
-            </span>
-            <span className="px-4 py-2 rounded-lg bg-coffee-card border border-coffee-border/50 text-xs font-semibold text-coffee-cream flex items-center gap-1.5">
-              Vector Sharding <span className="text-[#4e8f69] font-bold">+35.0%</span>
-            </span>
-            <span className="px-4 py-2 rounded-lg bg-coffee-card border border-coffee-border/50 text-xs font-semibold text-coffee-cream flex items-center gap-1.5">
-              Tailwind CSS v4 <span className="text-[#4e8f69] font-bold">+65.0%</span>
-            </span>
-            <span className="px-4 py-2 rounded-lg bg-coffee-card border border-coffee-border/50 text-xs font-semibold text-[#a5968f] flex items-center gap-1.5">
-              Basic Bootstrap <span className="text-[#c25953] font-bold">-18.2%</span>
-            </span>
+      {/* Section 8: AI Pulse Terminal (Live Hub) */}
+      <section className="py-24 px-6 md:px-12 bg-[#0a0604] border-y border-coffee-border/20">
+        <div className="max-w-7xl mx-auto space-y-12">
+          
+          {/* Section Header */}
+          <div className="text-center max-w-2xl mx-auto space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-coffee-card border border-coffee-border/50 text-coffee-accent text-[10px] font-bold tracking-wider uppercase">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> Fresh Roast Dashboard
+            </div>
+            <h2 className="text-3xl md:text-4xl font-display font-extrabold text-coffee-cream">
+              Live AI Intelligence Café
+            </h2>
+            <p className="text-coffee-text-muted text-xs md:text-sm">
+              An aggregate view of Live Feeds, Model Releases, Venture Capital, and Tech Markets. Updated in real time.
+            </p>
           </div>
+
+          {/* Interactive Bloomberg-style Terminal Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* LEFT STREAM: Live Brew Feed & Model Wars */}
+            <div className="lg:col-span-8 space-y-8">
+              
+              {/* Freshly Brewed Today */}
+              <div className="glass-panel rounded-xl border border-coffee-border/40 bg-[#0f0a08]/90 overflow-hidden shadow-xl">
+                <div className="border-b border-coffee-border/30 bg-coffee-dark/50 px-6 py-4 flex justify-between items-center">
+                  <span className="text-xs font-bold text-coffee-cream uppercase tracking-wide flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-coffee-accent animate-pulse" />
+                    Freshly Brewed Today (Signals Stream)
+                  </span>
+                  <span className="text-[10px] font-mono text-coffee-text-muted">Interval: 1 min</span>
+                </div>
+                <div className="p-6 space-y-4 max-h-[350px] overflow-y-auto pr-2">
+                  
+                  {/* Signal 1 */}
+                  <div className="flex gap-4 items-start border-b border-coffee-border/20 pb-4">
+                    <span className="text-[10px] font-mono font-bold text-coffee-accent bg-[#070403] px-2 py-0.5 rounded border border-coffee-accent/10 mt-0.5 shrink-0">
+                      AI
+                    </span>
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-coffee-cream">OpenAI Launches GPT-5 Preview with Native Multi-Agent Orchestration</h4>
+                      <p className="text-[11px] text-coffee-text-muted leading-relaxed">
+                        Features native agent coordination allowing developers to define complex hierarchies directly in API calls. 
+                        <strong> Impact:</strong> Shifts UI frameworks toward agentic state systems.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Signal 2 */}
+                  <div className="flex gap-4 items-start border-b border-coffee-border/20 pb-4">
+                    <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/20 px-2 py-0.5 rounded border border-emerald-500/10 mt-0.5 shrink-0">
+                      FINANCE
+                    </span>
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-coffee-cream">Physical Intelligence Closes $400M Seed Round for Robot Control Software</h4>
+                      <p className="text-[11px] text-coffee-text-muted leading-relaxed">
+                        Bezos Expeditions and OpenAI back universal control models for physical movement.
+                        <strong> Valuation:</strong> $2.4B post-money.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Signal 3 */}
+                  <div className="flex gap-4 items-start">
+                    <span className="text-[10px] font-mono font-bold text-coffee-text-muted bg-[#070403] px-2 py-0.5 rounded border border-coffee-border/40 mt-0.5 shrink-0">
+                      RESEARCH
+                    </span>
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-coffee-cream">DeepMind Unveils AlphaFold 3: Modeling Protein-DNA Interactions</h4>
+                      <p className="text-[11px] text-coffee-text-muted leading-relaxed">
+                        Predicts interactions of life's molecules (DNA, RNA, chemical compounds) in silico.
+                        <strong> Research:</strong> Speeds drug validation times by 80%.
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Model Wars */}
+              <div className="glass-panel rounded-xl border border-coffee-border/40 bg-[#0f0a08]/90 overflow-hidden shadow-xl">
+                <div className="border-b border-coffee-border/30 bg-coffee-dark/50 px-6 py-4">
+                  <span className="text-xs font-bold text-coffee-cream uppercase tracking-wide">Model Wars (Benchmark Matrix)</span>
+                </div>
+                <div className="p-6 overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="border-b border-coffee-border/30 text-coffee-text-muted font-mono uppercase text-[9px]">
+                        <th className="pb-3">Model</th>
+                        <th className="pb-3">MMLU</th>
+                        <th className="pb-3">Context Window</th>
+                        <th className="pb-3">Strategic Feature</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-coffee-border/10 font-mono text-coffee-cream">
+                      <tr>
+                        <td className="py-3.5 font-bold text-white">GPT-5 Preview</td>
+                        <td className="py-3.5 text-emerald-400">91.2%</td>
+                        <td className="py-3.5">256k tokens</td>
+                        <td className="py-3.5 text-coffee-text-muted font-sans">Native YAML Multi-Agent routing</td>
+                      </tr>
+                      <tr>
+                        <td className="py-3.5 font-bold text-white">Claude 3.5 Opus</td>
+                        <td className="py-3.5 text-emerald-400">89.8%</td>
+                        <td className="py-3.5">500k tokens</td>
+                        <td className="py-3.5 text-coffee-text-muted font-sans">Graph context routing reduces hallucinations</td>
+                      </tr>
+                      <tr>
+                        <td className="py-3.5 font-bold text-white">Gemini 1.5 Pro</td>
+                        <td className="py-3.5 text-emerald-400">86.4%</td>
+                        <td className="py-3.5">2.0M tokens</td>
+                        <td className="py-3.5 text-coffee-text-muted font-sans">Real-time multi-modal streaming feed inputs</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+            {/* RIGHT SIDEBAR: Markets, Careers, & Radar */}
+            <div className="lg:col-span-4 space-y-8">
+              
+              {/* AI Market Pulse */}
+              <div className="glass-panel p-6 rounded-xl border border-coffee-border/40 bg-[#0f0a08]/90 space-y-4 shadow-xl">
+                <span className="text-xs font-bold text-coffee-cream uppercase tracking-wide block border-b border-coffee-border/20 pb-2">
+                  AI Market Pulse
+                </span>
+                <div className="space-y-3 font-mono text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-coffee-cream font-bold">NVIDIA (NVDA)</span>
+                    <span className="text-emerald-400 font-extrabold">+4.2%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-coffee-cream font-bold">Microsoft (MSFT)</span>
+                    <span className="text-emerald-400 font-extrabold">+1.1%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-coffee-cream font-bold">NASDAQ 100</span>
+                    <span className="text-emerald-400 font-extrabold">+1.8%</span>
+                  </div>
+                  <div className="flex justify-between items-center border-t border-coffee-border/20 pt-2 text-[10px] text-coffee-text-muted">
+                    <span>Fed Interest Rate</span>
+                    <span>5.25% (Held)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Career Radar */}
+              <div className="glass-panel p-6 rounded-xl border border-coffee-border/40 bg-[#0f0a08]/90 space-y-4 shadow-xl">
+                <span className="text-xs font-bold text-coffee-cream uppercase tracking-wide block border-b border-coffee-border/20 pb-2">
+                  Career Radar (Skills Cloud)
+                </span>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <span className="px-2.5 py-1 bg-coffee-dark border border-coffee-border/60 rounded text-[10px] font-bold text-white">
+                    Rust <span className="text-emerald-400 font-mono">+28%</span>
+                  </span>
+                  <span className="px-2.5 py-1 bg-coffee-dark border border-coffee-border/60 rounded text-[10px] font-bold text-white">
+                    AI Agents <span className="text-emerald-400 font-mono">+42%</span>
+                  </span>
+                  <span className="px-2.5 py-1 bg-coffee-dark border border-coffee-border/60 rounded text-[10px] font-bold text-white">
+                    Vector DBs <span className="text-emerald-400 font-mono">+35%</span>
+                  </span>
+                  <span className="px-2.5 py-1 bg-coffee-dark border border-coffee-border/60 rounded text-[10px] font-bold text-white">
+                    Next.js <span className="text-emerald-400 font-mono">+18%</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Startup & Funding Radar */}
+              <div className="glass-panel p-6 rounded-xl border border-coffee-border/40 bg-[#0f0a08]/90 space-y-4 shadow-xl">
+                <span className="text-xs font-bold text-coffee-cream uppercase tracking-wide block border-b border-coffee-border/20 pb-2">
+                  Startup & Funding Radar
+                </span>
+                <div className="space-y-3 text-[11px] text-coffee-cream">
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-mono text-coffee-accent uppercase">Acquisition</span>
+                    <p className="font-bold leading-snug">OpenAI acquires Rockset to scale real-time search sharding databases.</p>
+                  </div>
+                  <div className="space-y-1 border-t border-coffee-border/10 pt-2">
+                    <span className="text-[9px] font-mono text-coffee-accent uppercase">Funding</span>
+                    <p className="font-bold leading-snug">Qdrant raises $45M Series B funding led by Benchmark Capital.</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
       </section>
+
 
       {/* Section 9: How It Works */}
       <section className="py-24 px-6 md:px-12">

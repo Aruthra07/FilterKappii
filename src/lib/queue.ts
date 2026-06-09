@@ -5,10 +5,10 @@ import { ingestSource, generateUserDigest } from './worker';
 let redisConnection: Redis | null = null;
 let ingestionQueue: Queue | null = null;
 let digestQueue: Queue | null = null;
-
 const REDIS_URL = process.env.REDIS_URL;
+const cacheProvider = process.env.CACHE_PROVIDER || 'mock';
 
-if (REDIS_URL && REDIS_URL !== 'mock') {
+if (cacheProvider === 'redis' && REDIS_URL && REDIS_URL !== 'mock') {
   try {
     redisConnection = new Redis(REDIS_URL, {
       maxRetriesPerRequest: null,
@@ -23,6 +23,7 @@ if (REDIS_URL && REDIS_URL !== 'mock') {
     console.warn('Failed to create Redis connection client. Using offline background job scheduler.');
   }
 }
+
 
 export function initQueues() {
   if (redisConnection) {

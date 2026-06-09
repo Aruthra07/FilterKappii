@@ -25,9 +25,10 @@ export default function MorningBriefingsPage() {
     <div className="space-y-6 max-w-7xl mx-auto h-full flex flex-col">
       {/* Title */}
       <div>
-        <h1 className="text-2xl font-display font-extrabold text-coffee-cream">Morning Briefings</h1>
+        <h1 className="text-2xl font-display font-extrabold text-coffee-cream">Brewing Room</h1>
         <p className="text-xs text-coffee-text-muted">Your customized briefings, brewed daily according to your topic keywords.</p>
       </div>
+
 
       {isLoading ? (
         <div className="flex-1 flex flex-col items-center justify-center py-24">
