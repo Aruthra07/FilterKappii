@@ -24,7 +24,8 @@ import {
   DollarSign,
   Activity,
   Zap,
-  Clock
+  Clock,
+  Mic
 } from 'lucide-react';
 import { UserButton, SignOutButton } from '@clerk/nextjs';
 import { trpc } from '@/utils/trpc';
@@ -59,6 +60,7 @@ export default function DashboardLayout({
       links: [
         { name: 'Brew Feed', href: '/brew-feed', icon: Radio },
         { name: 'Coffee Search', href: '/coffee-search', icon: Search },
+        { name: 'Voice Lounge', href: '/dashboard/voice-agent', icon: Mic },
         { name: 'AI Radar Map', href: '/ai-radar', icon: Compass },
         { name: 'Company Lounge', href: '/company-lounge', icon: Users },
         { name: 'Model Roastery', href: '/model-roastery', icon: Cpu },

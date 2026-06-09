@@ -1,15 +1,90 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check, ShieldCheck, Flame, Cpu, TrendingUp, Briefcase, Calendar, Zap } from 'lucide-react';
 import CoffeeCup from '@/components/CoffeeCup';
 import SmoothScroll from '@/components/SmoothScroll';
+import VoiceAgentPlayer from '@/components/VoiceAgentPlayer';
 
 export default function LandingPage() {
   const isMockClerk = !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 
                       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('mock');
+
+  const [hotTimeframe, setHotTimeframe] = useState<'today' | 'week' | 'month'>('today');
+
+  const getHotItems = () => {
+    if (hotTimeframe === 'today') {
+      return [
+        {
+          category: 'AI',
+          time: '2 hours ago',
+          title: 'OpenAI Releases GPT-5 Preview with Native Multi-Agent Orchestration',
+          content: 'The update standardizes native agent coordination directly in the API, allowing developers to define complex sub-agent state routing trees.'
+        },
+        {
+          category: 'Finance',
+          time: '5 hours ago',
+          title: 'Robotics Control Startup Physical Intelligence Closes $400M Seed',
+          content: 'Bezos Expeditions, OpenAI, and Thrive Capital lead the seed round at a 2.4 billion dollar post-money valuation, targeting general foundation control models.'
+        },
+        {
+          category: 'AI',
+          time: '9 hours ago',
+          title: 'DeepMind Introduces AlphaFold 3: Modeling Protein-DNA Interactions',
+          content: 'Allows structural and interaction predictions of DNA, RNA, and chemical compounds, cutting candidate compound validation times in silico.'
+        }
+      ];
+    }
+    if (hotTimeframe === 'week') {
+      return [
+        {
+          category: 'Finance',
+          time: '2 days ago',
+          title: 'Benchmark Leads $45M Series B for Qdrant Vector Databases',
+          content: 'Capital will scale real-time sharded vector partitioning for high-throughput streaming intelligence applications.'
+        },
+        {
+          category: 'Career',
+          time: '4 days ago',
+          title: 'AI Ingestion and Vector Sharding Skills Command 35% Salary Premium',
+          content: 'LinkedIn recruitment telemetry indicates shift in engineering demand from React view-layer developers to RAG-pipeline and middleware orchestrators.'
+        },
+        {
+          category: 'Finance',
+          time: '6 days ago',
+          title: 'Nvidia Stock Rises 4.2% on Strong Blackwell Production Forecasts',
+          content: 'Supply chain telemetry indicates record shipment yields of next-generation B200 accelerators, keeping tech multiple indices elevated.'
+        }
+      ];
+    }
+    return [
+      {
+        category: 'AI',
+        time: '2 weeks ago',
+        title: 'Multi-Modal Voice Streaming Latency Drops Below 150ms',
+        content: 'Native voice audio and video streaming integrations in Apple Intelligence and Gemini 1.5 Pro bypass text pipelines for conversational loops.'
+      },
+      {
+        category: 'Finance',
+        time: '3 weeks ago',
+        title: 'Microsoft Commits Additional $10B for Liquid-Cooled Datacenters',
+        content: 'Strategic partnership with hardware infrastructure providers secures gigawatt-scale power allocations for cluster expansions.'
+      },
+      {
+        category: 'AI',
+        time: '4 weeks ago',
+        title: 'Vector Sharding Standards Mature: pgvector vs Standalone Clusters',
+        content: 'Enterprise database architectures establish clear hybrid patterns, utilizing standalone vector spaces like Qdrant for real-time memory sharding.'
+      }
+    ];
+  };
+
+  const getHotScript = () => {
+    const items = getHotItems();
+    return `Here are the trending highlights for ${hotTimeframe === 'today' ? 'today' : hotTimeframe === 'week' ? 'this week' : 'this month'}. ${items.map((it, idx) => `Item ${idx + 1}, ${it.title}. ${it.content}`).join(' ')} That completes the highlights.`;
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -47,6 +122,7 @@ export default function LandingPage() {
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-coffee-text-muted">
           <Link href="#features" className="hover:text-coffee-accent transition-colors">Features</Link>
           <Link href="#pillars" className="hover:text-coffee-accent transition-colors">Intelligence</Link>
+          <Link href="#hot-spot" className="hover:text-coffee-accent transition-colors">Trending</Link>
           <Link href="#sample" className="hover:text-coffee-accent transition-colors">Sample Briefing</Link>
           <Link href="#pricing" className="hover:text-coffee-accent transition-colors">Pricing</Link>
         </nav>
@@ -561,6 +637,71 @@ export default function LandingPage() {
                   <a href="#" className="text-coffee-accent hover:underline">github.com/trends</a>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 10.5: Hot Spot & Voice agent */}
+      <section id="hot-spot" className="py-24 px-6 md:px-12 bg-[#090504] border-t border-coffee-border/20">
+        <div className="max-w-7xl mx-auto space-y-16">
+          <div className="text-center space-y-4 max-w-xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-coffee-card border border-coffee-border/50 text-coffee-accent text-[10px] font-bold tracking-wider uppercase">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> Trending Signals
+            </div>
+            <h2 className="text-3xl font-display font-extrabold text-coffee-cream">The Hot Spot Café</h2>
+            <p className="text-coffee-text-muted text-sm">Listen to or read what is trending in technology, venture capital, and career markets right now.</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Feed selection & cards */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="flex gap-2 border-b border-coffee-border/20 pb-3">
+                {(['today', 'week', 'month'] as const).map((time) => (
+                  <button
+                    key={time}
+                    onClick={() => setHotTimeframe(time)}
+                    className={`px-4 py-2 rounded-lg text-xs font-mono font-bold capitalize transition-all border ${
+                      hotTimeframe === time
+                        ? 'bg-coffee-accent text-[#0c0806] border-coffee-accent'
+                        : 'bg-[#0f0a08]/50 border-coffee-border/30 text-coffee-text-muted hover:text-coffee-cream'
+                    }`}
+                  >
+                    Hot {time === 'today' ? 'Today' : time === 'week' ? 'This Week' : 'This Month'}
+                  </button>
+                ))}
+              </div>
+
+              {/* Feed items list */}
+              <div className="space-y-4">
+                {getHotItems().map((item, idx) => (
+                  <div key={idx} className="glass-panel p-5 rounded-xl border border-coffee-border/30 bg-[#0f0a08]/75 space-y-2.5">
+                    <div className="flex justify-between items-center text-[9px] font-mono">
+                      <span className={`px-2 py-0.5 rounded border font-bold uppercase ${
+                        item.category === 'AI' 
+                          ? 'text-coffee-accent border-coffee-accent/20 bg-[#070403]'
+                          : item.category === 'Finance'
+                            ? 'text-emerald-400 border-emerald-500/10 bg-emerald-950/10'
+                            : 'text-coffee-text-muted border-coffee-border/30 bg-[#070403]'
+                      }`}>
+                        {item.category}
+                      </span>
+                      <span className="text-coffee-text-muted">{item.time}</span>
+                    </div>
+                    <h4 className="text-xs sm:text-sm font-bold text-coffee-cream leading-snug">{item.title}</h4>
+                    <p className="text-xs text-coffee-text-muted leading-relaxed">{item.content}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Voice player widget */}
+            <div className="lg:col-span-5 sticky top-24">
+              <VoiceAgentPlayer
+                key={hotTimeframe}
+                text={getHotScript()}
+                title={`Hot ${hotTimeframe === 'today' ? 'Today' : hotTimeframe === 'week' ? 'This Week' : 'This Month'} Highlights`}
+              />
             </div>
           </div>
         </div>
