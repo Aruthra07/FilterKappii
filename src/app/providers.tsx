@@ -5,6 +5,8 @@ import { httpBatchLink } from '@trpc/client';
 import React, { useState } from 'react';
 import { trpc } from '@/utils/trpc';
 
+import { CafeAtmosphereProvider } from '@/components/CafeAtmosphere';
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
     () =>
@@ -31,7 +33,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <CafeAtmosphereProvider>
+          {children}
+        </CafeAtmosphereProvider>
       </QueryClientProvider>
     </trpc.Provider>
   );
