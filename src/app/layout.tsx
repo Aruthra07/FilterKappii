@@ -11,7 +11,8 @@ export const metadata: Metadata = {
   viewport: 'width=device-width, initial-scale=1',
 };
 
-const isMockClerk = !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 
+const isMockClerk = process.env.AUTH_PROVIDER !== 'clerk' ||
+                    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 
                     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('mock');
 
 export default function RootLayout({

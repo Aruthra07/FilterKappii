@@ -37,7 +37,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isMockClerk = !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 
+  const isMockClerk = process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'mock' ||
+                      !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 
                       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('mock');
 
   // Fetch subscription & role status

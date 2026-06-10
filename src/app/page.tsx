@@ -9,7 +9,8 @@ import SmoothScroll from '@/components/SmoothScroll';
 import VoiceAgentPlayer from '@/components/VoiceAgentPlayer';
 
 export default function LandingPage() {
-  const isMockClerk = !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 
+  const isMockClerk = process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'mock' ||
+                      !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 
                       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('mock');
 
   const [hotTimeframe, setHotTimeframe] = useState<'today' | 'week' | 'month'>('today');

@@ -1,7 +1,9 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
-const isMockClerk = !process.env.CLERK_SECRET_KEY || process.env.CLERK_SECRET_KEY.includes('mock');
+const isMockClerk = process.env.AUTH_PROVIDER !== 'clerk' ||
+                    !process.env.CLERK_SECRET_KEY || 
+                    process.env.CLERK_SECRET_KEY.includes('mock');
 
 const isPublicRoute = createRouteMatcher([
   '/',
