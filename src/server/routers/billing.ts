@@ -48,7 +48,8 @@ export const billingRouter = router({
   createCheckoutSession: protectedProcedure
     .input(z.object({ planCode: z.enum(['PRO', 'POWER']) }))
     .mutation(async ({ ctx, input }) => {
-      const redirectUrl = `http://localhost:3000/dashboard/billing`;
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const redirectUrl = `${baseUrl}/dashboard/billing`;
       try {
         return await paymentService.createCheckoutSession(ctx.user.id, input.planCode, redirectUrl);
       } catch (err: any) {
@@ -59,7 +60,8 @@ export const billingRouter = router({
 
   // Manage billing redirect
   createPortalSession: protectedProcedure.mutation(async ({ ctx }) => {
-    const returnUrl = 'http://localhost:3000/dashboard/billing';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const returnUrl = `${baseUrl}/dashboard/billing`;
     try {
       return await paymentService.createPortalSession(ctx.user.id, returnUrl);
     } catch (err: any) {

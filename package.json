@@ -22,6 +22,8 @@
     "@trpc/client": "^11.17.0",
     "@trpc/react-query": "^11.17.0",
     "@trpc/server": "^11.17.0",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "bullmq": "^5.78.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.40.0",

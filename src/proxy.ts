@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import type { NextRequest, NextFetchEvent } from 'next/server';
 
 const isMockClerk = process.env.AUTH_PROVIDER !== 'clerk' ||
                     !process.env.CLERK_SECRET_KEY || 
@@ -13,7 +14,13 @@ const isPublicRoute = createRouteMatcher([
   '/api/trpc(.*)',
 ]);
 
-export default clerkMiddleware(async (auth, request) => {
+const clerkAuth = clerkMiddleware(async (auth, request) => {
+  if (!isPublicRoute(request)) {
+    await auth.protect();
+  }
+});
+
+export function proxy(request: NextRequest, event: NextFetchEvent) {
   if (isMockClerk) {
     if (!isPublicRoute(request)) {
       const session = request.cookies.get('fc_session');
@@ -26,11 +33,8 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.next();
   }
   
-  if (!isPublicRoute(request)) {
-    await auth.protect();
-  }
-});
-
+  return clerkAuth(request, event);
+}
 
 export const config = {
   matcher: [

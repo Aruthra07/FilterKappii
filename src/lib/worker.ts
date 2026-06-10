@@ -291,6 +291,7 @@ Compile the morning briefing.`;
   }
 
   // 5. Send Digest Email
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://filtercoffee.ai';
   const emailHtml = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #111; line-height: 1.6;">
       <div style="border-bottom: 2px solid #8b5a2b; padding-bottom: 10px; margin-bottom: 20px;">
@@ -308,7 +309,7 @@ Compile the morning briefing.`;
       </div>
       <div style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; font-size: 12px; color: #999;">
         <p>You received this digest because you subscribe to topic feeds on FilterCoffee.ai.</p>
-        <p><a href="http://localhost:3000/dashboard/settings" style="color: #8b5a2b; text-decoration: none;">Manage subscriptions</a> | <a href="http://localhost:3000/dashboard/billing" style="color: #8b5a2b; text-decoration: none;">Billing</a></p>
+        <p><a href="${baseUrl}/dashboard/settings" style="color: #8b5a2b; text-decoration: none;">Manage subscriptions</a> | <a href="${baseUrl}/dashboard/billing" style="color: #8b5a2b; text-decoration: none;">Billing</a></p>
       </div>
     </div>
   `;
