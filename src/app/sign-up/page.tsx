@@ -4,12 +4,17 @@ import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { signUpAction } from '../actions/auth';
 import { Loader2, ArrowRight, Mail, User, Info } from 'lucide-react';
+import { SignUp } from '@clerk/nextjs';
 
 export default function SignUpPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const isMockClerk = process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'mock' ||
+                      !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+                      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('mock');
 
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +31,60 @@ export default function SignUpPage() {
       }
     });
   };
+
+  if (!isMockClerk) {
+    return (
+      <div className="min-h-screen bg-[#070403] text-f4eae4 flex flex-col justify-center items-center px-4 relative overflow-hidden">
+        {/* Decorative radial glows */}
+        <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-[#8b5a2b]/10 blur-[150px] pointer-events-none" />
+        <div className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] rounded-full bg-[#8b5a2b]/5 blur-[150px] pointer-events-none" />
+
+        <div className="w-full max-w-md space-y-8 relative z-10 flex flex-col items-center">
+          {/* Header */}
+          <div className="text-center space-y-2 mb-4">
+            <Link href="/" className="inline-flex items-center gap-2">
+              <svg className="w-8 h-8 text-coffee-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+                <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+                <path d="M6 2v3" />
+                <path d="M10 2v3" />
+                <path d="M14 2v3" />
+              </svg>
+              <span className="font-display font-extrabold text-2xl tracking-wider text-f4eae4">
+                FILTERCOFFEE<span className="text-coffee-accent">.AI</span>
+              </span>
+            </Link>
+          </div>
+
+          <SignUp
+            appearance={{
+              variables: {
+                colorPrimary: '#c28854',
+                colorBackground: '#0f0a08',
+                colorText: '#f4eae4',
+                colorTextSecondary: '#a28a78',
+                colorInputBackground: '#070403',
+                colorInputText: '#f4eae4',
+                colorBorder: '#2d1e18',
+              },
+              elements: {
+                card: 'border border-coffee-border bg-[#0f0a08]/90 shadow-xl rounded-2xl',
+                headerTitle: 'font-display font-extrabold text-f4eae4 text-xl tracking-wider',
+                headerSubtitle: 'text-xs text-coffee-text-muted',
+                socialButtonsIconButton: 'bg-coffee-dark border border-coffee-border hover:bg-coffee-border/30 text-f4eae4',
+                formButtonPrimary: 'bg-coffee-accent hover:bg-coffee-accent-hover text-[#090504] font-semibold text-xs rounded-lg transition-all shadow-[0_4px_12px_rgba(194,136,84,0.2)]',
+                footerActionLink: 'text-coffee-accent hover:text-coffee-accent-hover',
+                formFieldInput: 'bg-coffee-dark border border-coffee-border/60 rounded-lg text-xs text-f4eae4 placeholder-coffee-text-muted/50 focus:border-coffee-accent focus:ring-1 focus:ring-coffee-accent focus:outline-none transition-all',
+                formFieldLabel: 'text-xs font-semibold text-coffee-cream',
+              }
+            }}
+            signInUrl="/sign-in"
+            forceRedirectUrl="/dashboard"
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#070403] text-f4eae4 flex flex-col justify-center items-center px-4 relative overflow-hidden">
@@ -141,3 +200,4 @@ export default function SignUpPage() {
     </div>
   );
 }
+
