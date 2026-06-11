@@ -62,6 +62,9 @@ export const adminRouter = router({
         name: z.string().min(1),
         url: z.string().url(),
         type: z.enum(['AI', 'Finance', 'Career', 'General']),
+        format: z.enum(['RSS', 'API', 'CUSTOM']).default('RSS'),
+        category: z.string().default('General'),
+        pollingInterval: z.number().int().positive().default(60),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -70,6 +73,9 @@ export const adminRouter = router({
           name: input.name,
           url: input.url,
           type: input.type,
+          format: input.format,
+          category: input.category,
+          pollingInterval: input.pollingInterval,
           isActive: true,
         },
       });
@@ -102,6 +108,53 @@ export const adminRouter = router({
       });
 
       return { success: true };
+    }),
+
+  toggleSourceActive: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        isActive: z.boolean(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const source = await ctx.db.source.update({
+        where: { id: input.id },
+        data: { isActive: input.isActive },
+      });
+
+      await ctx.db.auditLog.create({
+        data: {
+          userId: ctx.user.id,
+          action: 'SOURCE_TOGGLE_ACTIVE',
+          details: `Admin toggled source active state for "${source.name}" to ${input.isActive}`,
+        },
+      });
+
+      return source;
+    }),
+
+  testIngestSource: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const source = await ctx.db.source.findUnique({ where: { id: input.id } });
+      if (!source) throw new Error('Source not found.');
+
+      const { ingestSource } = await import('@/lib/worker');
+      try {
+        await ingestSource(source.id);
+        const updated = await ctx.db.source.findUnique({ where: { id: input.id } });
+        return {
+          success: true,
+          healthStatus: updated?.healthStatus || 'HEALTHY',
+          lastError: updated?.lastError || null,
+        };
+      } catch (err: any) {
+        return {
+          success: false,
+          error: err.message || String(err),
+        };
+      }
     }),
 
   // Trigger ingestion pipeline instantly for all sources

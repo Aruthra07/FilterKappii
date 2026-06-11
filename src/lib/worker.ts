@@ -43,23 +43,62 @@ export async function ingestSource(sourceId: string) {
   console.log(`[Ingestion] Starting ingestion for: ${source.name} (${source.url})`);
 
   let items: Array<{ title: string; content: string; url: string; publishedAt: Date }> = [];
+  let ingestionError: string | null = null;
 
   try {
     if (source.url.startsWith('http')) {
       const response = await fetch(source.url, { headers: { 'User-Agent': 'FilterCoffee/1.0' } });
-      if (response.ok) {
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+      }
+
+      if (source.format === 'RSS') {
         const text = await response.text();
         items = parseRss(text);
+      } else if (source.format === 'API') {
+        const data = await response.json();
+        const rawItems = Array.isArray(data) ? data : (data.items || data.articles || data.data || []);
+        if (Array.isArray(rawItems)) {
+          for (const raw of rawItems) {
+            const title = raw.title || raw.name || raw.heading || '';
+            const content = raw.content || raw.description || raw.body || raw.summary || '';
+            const url = raw.url || raw.link || raw.href || source.url;
+            const publishedAt = raw.publishedAt || raw.pubDate || raw.date || new Date();
+            if (title) {
+              items.push({
+                title: String(title).trim(),
+                content: String(content).trim().replace(/<[^>]*>/g, ''),
+                url: String(url).trim(),
+                publishedAt: new Date(publishedAt),
+              });
+            }
+          }
+        }
+      } else {
+        // CUSTOM
+        const text = await response.text();
+        const titleMatch = text.match(/<title>([\s\S]*?)<\/title>/);
+        if (titleMatch && titleMatch[1]) {
+          items.push({
+            title: titleMatch[1].trim(),
+            content: `Custom parsed integration page from ${source.url}`,
+            url: source.url,
+            publishedAt: new Date(),
+          });
+        }
       }
     }
-  } catch (error) {
-    console.error(`[Ingestion] Network error fetching ${source.name}:`, error);
+  } catch (error: any) {
+    console.error(`[Ingestion] Fetching error for ${source.name}:`, error);
+    ingestionError = error.message || String(error);
   }
 
   // Fallback to rich mock data if no items were parsed or it is a placeholder URL
+  let isUsingFallback = false;
   if (items.length === 0) {
     console.log(`[Ingestion] Generating mock signals for source type: ${source.type}`);
     items = getMockSourceItems(source.type, source.name);
+    isUsingFallback = true;
   }
 
   let signalsAdded = 0;
@@ -82,7 +121,7 @@ export async function ingestSource(sourceId: string) {
       }
 
       // 4. Determine pillar category and score
-      let category = 'General';
+      let category = source.category || 'General';
       const lowTitle = item.title.toLowerCase();
       const lowContent = item.content.toLowerCase();
       if (lowTitle.includes('ai') || lowContent.includes('gpt') || lowContent.includes('llm') || lowContent.includes('openai') || lowContent.includes('anthropic') || lowContent.includes('model')) {
@@ -155,17 +194,21 @@ Output ONLY the raw JSON. Do not write markdown tags or block quotes.`;
     }
   }
 
-  // Update last fetched timestamp
+  // Update last fetched timestamp, health status, and error status
   await db.source.update({
     where: { id: source.id },
-    data: { lastFetched: new Date() },
+    data: {
+      lastFetched: new Date(),
+      healthStatus: ingestionError ? (isUsingFallback ? 'DEGRADED' : 'FAILING') : 'HEALTHY',
+      lastError: ingestionError,
+    },
   });
 
   // Create audit log
   await db.auditLog.create({
     data: {
       action: 'INGESTION',
-      details: `Ingested source "${source.name}". Added ${signalsAdded} new signals.`,
+      details: `Ingested source "${source.name}". Added ${signalsAdded} new signals. Status: ${ingestionError ? 'DEGRADED' : 'HEALTHY'}.`,
     },
   });
 

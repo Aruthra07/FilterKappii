@@ -75,14 +75,19 @@ model TopicKeyword {
 }
 
 model Source {
-  id          String   @id @default(cuid())
-  name        String
-  url         String   @unique
-  type        String   // RSS, Github, HF, Job, Finance, NewsAPI
-  isActive    Boolean  @default(true)
-  lastFetched DateTime?
-  createdAt   DateTime @default(now())
-  signals     Signal[]
+  id              String   @id @default(cuid())
+  name            String
+  url             String   @unique
+  type            String   // RSS, Github, HF, Job, Finance, NewsAPI
+  format          String   @default("RSS") // RSS, API, CUSTOM
+  category        String   @default("General") // AI, Startups, Research, Programming, Cloud, Security, Mobile, Hardware, Technology
+  pollingInterval Int      @default(60) // In minutes
+  lastError       String?
+  healthStatus    String   @default("HEALTHY") // HEALTHY, DEGRADED, FAILING
+  isActive        Boolean  @default(true)
+  lastFetched     DateTime?
+  createdAt       DateTime @default(now())
+  signals         Signal[]
 }
 
 model Signal {

@@ -23,7 +23,10 @@ import {
   Check,
   Clock,
   User,
-  BookOpen
+  BookOpen,
+  Play,
+  Activity,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function AdminConsolePage() {
@@ -50,6 +53,9 @@ export default function AdminConsolePage() {
   const [sourceName, setSourceName] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [sourceType, setSourceType] = useState<'AI' | 'Finance' | 'Career' | 'General'>('AI');
+  const [sourceFormat, setSourceFormat] = useState<'RSS' | 'API' | 'CUSTOM'>('RSS');
+  const [sourceCategory, setSourceCategory] = useState<string>('General');
+  const [sourcePollingInterval, setSourcePollingInterval] = useState<number>(60);
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
 
@@ -58,6 +64,9 @@ export default function AdminConsolePage() {
     onSuccess: () => {
       setSourceName('');
       setSourceUrl('');
+      setSourceFormat('RSS');
+      setSourceCategory('General');
+      setSourcePollingInterval(60);
       setFormError('');
       setFormSuccess('Feed source added successfully.');
       refetchSources();
@@ -76,6 +85,35 @@ export default function AdminConsolePage() {
       refetchMetrics();
       refetchAudits();
     },
+  });
+
+  const toggleSourceActiveMutation = trpc.admin.toggleSourceActive.useMutation({
+    onSuccess: () => {
+      refetchSources();
+      refetchAudits();
+    },
+    onError: (err) => {
+      alert(`Failed to toggle active status: ${err.message}`);
+    }
+  });
+
+  const testIngestSourceMutation = trpc.admin.testIngestSource.useMutation({
+    onSuccess: (data) => {
+      if (data.success && 'healthStatus' in data) {
+        alert(`Ingestion test successful! Status: ${data.healthStatus}`);
+      } else if (!data.success && 'error' in data) {
+        alert(`Ingestion test failed: ${data.error}`);
+      } else {
+        alert('Ingestion test completed.');
+      }
+      refetchSources();
+      refetchMetrics();
+      refetchAudits();
+      utils.signals.getSignals.invalidate();
+    },
+    onError: (err) => {
+      alert(`Error launching test: ${err.message}`);
+    }
   });
 
   const triggerIngestionMutation = trpc.admin.triggerManualIngestion.useMutation({
@@ -124,6 +162,9 @@ export default function AdminConsolePage() {
       name: sourceName,
       url: sourceUrl,
       type: sourceType,
+      format: sourceFormat,
+      category: sourceCategory,
+      pollingInterval: sourcePollingInterval,
     });
   };
 
@@ -266,39 +307,88 @@ export default function AdminConsolePage() {
                   {formSuccess && <div className="p-3 bg-emerald-950/20 border border-emerald-900/40 text-emerald-200 rounded">{formSuccess}</div>}
 
                   <div className="space-y-1.5">
-                    <label className="font-semibold text-coffee-cream">Source Name</label>
+                    <label className="font-semibold text-coffee-cream text-xs">Source Name</label>
                     <input
                       type="text"
                       placeholder="e.g. Hacker News RSS"
                       value={sourceName}
                       onChange={(e) => setSourceName(e.target.value)}
-                      className="w-full bg-[#070403] border border-coffee-border/60 rounded p-2.5 text-f4eae4 focus:outline-none focus:border-coffee-accent transition-colors"
+                      className="w-full bg-[#070403] border border-coffee-border/60 rounded p-2.5 text-f4eae4 focus:outline-none focus:border-coffee-accent transition-colors text-sm"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="font-semibold text-coffee-cream">RSS Feed URL</label>
+                    <label className="font-semibold text-coffee-cream text-xs">Source URL / Endpoint</label>
                     <input
                       type="url"
                       placeholder="e.g. https://news.ycombinator.com/rss"
                       value={sourceUrl}
                       onChange={(e) => setSourceUrl(e.target.value)}
-                      className="w-full bg-[#070403] border border-coffee-border/60 rounded p-2.5 text-f4eae4 focus:outline-none focus:border-coffee-accent transition-colors"
+                      className="w-full bg-[#070403] border border-coffee-border/60 rounded p-2.5 text-f4eae4 focus:outline-none focus:border-coffee-accent transition-colors text-sm"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="font-semibold text-coffee-cream">Ingestion Category</label>
-                    <select
-                      value={sourceType}
-                      onChange={(e) => setSourceType(e.target.value as any)}
-                      className="w-full bg-[#070403] border border-coffee-border/60 rounded p-2.5 text-f4eae4 focus:outline-none focus:border-coffee-accent transition-colors"
-                    >
-                      <option value="AI">AI Intelligence</option>
-                      <option value="Finance">Finance Intelligence</option>
-                      <option value="Career">Career Intelligence</option>
-                      <option value="General">General / Other</option>
-                    </select>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="font-semibold text-coffee-cream text-xs">Source Format</label>
+                      <select
+                        value={sourceFormat}
+                        onChange={(e) => setSourceFormat(e.target.value as any)}
+                        className="w-full bg-[#070403] border border-coffee-border/60 rounded p-2.5 text-f4eae4 focus:outline-none focus:border-coffee-accent transition-colors text-sm"
+                      >
+                        <option value="RSS">RSS Feed</option>
+                        <option value="API">Public API</option>
+                        <option value="CUSTOM">Custom Scraper</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="font-semibold text-coffee-cream text-xs">System Pillar</label>
+                      <select
+                        value={sourceType}
+                        onChange={(e) => setSourceType(e.target.value as any)}
+                        className="w-full bg-[#070403] border border-coffee-border/60 rounded p-2.5 text-f4eae4 focus:outline-none focus:border-coffee-accent transition-colors text-sm"
+                      >
+                        <option value="AI">AI Intelligence</option>
+                        <option value="Finance">Finance Intelligence</option>
+                        <option value="Career">Career Intelligence</option>
+                        <option value="General">General / Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <label className="font-semibold text-coffee-cream text-xs">Source Category</label>
+                      <select
+                        value={sourceCategory}
+                        onChange={(e) => setSourceCategory(e.target.value)}
+                        className="w-full bg-[#070403] border border-coffee-border/60 rounded p-2.5 text-f4eae4 focus:outline-none focus:border-coffee-accent transition-colors text-sm"
+                      >
+                        <option value="AI">AI</option>
+                        <option value="Startups">Startups</option>
+                        <option value="Research">Research</option>
+                        <option value="Programming">Programming</option>
+                        <option value="Cloud">Cloud</option>
+                        <option value="Security">Security</option>
+                        <option value="Mobile">Mobile</option>
+                        <option value="Hardware">Hardware</option>
+                        <option value="Technology">Technology</option>
+                        <option value="General">General</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="font-semibold text-coffee-cream text-xs">Poll (minutes)</label>
+                      <input
+                        type="number"
+                        min={5}
+                        max={1440}
+                        value={sourcePollingInterval}
+                        onChange={(e) => setSourcePollingInterval(Number(e.target.value))}
+                        className="w-full bg-[#070403] border border-coffee-border/60 rounded p-2.5 text-f4eae4 focus:outline-none focus:border-coffee-accent transition-colors text-sm"
+                      />
+                    </div>
                   </div>
 
                   <button
@@ -314,35 +404,107 @@ export default function AdminConsolePage() {
 
               {/* Ingestion Sources List */}
               <div className="lg:col-span-7 space-y-4">
-                <span className="text-[10px] font-mono uppercase text-coffee-text-muted tracking-wider px-1">Ingestion Registry</span>
-                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-                  {sources?.map((src) => (
-                    <div
-                      key={src.id}
-                      className="glass-panel p-4 rounded-lg bg-[#0c0806]/40 flex justify-between items-center gap-4 border border-coffee-border/30"
-                    >
-                      <div className="space-y-1.5 min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-coffee-cream truncate">{src.name}</span>
-                          <span className="px-1.5 py-0.5 rounded text-[8px] font-mono bg-[#070403] text-coffee-text-muted border border-coffee-border/20">
-                            {src.type}
-                          </span>
+                <div className="flex justify-between items-center px-1">
+                  <span className="text-[10px] font-mono uppercase text-coffee-text-muted tracking-wider">Ingestion Registry</span>
+                  <span className="text-[10px] font-mono text-coffee-accent">{sources?.length || 0} Registered Sources</span>
+                </div>
+                <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                  {sources?.map((src) => {
+                    const isHealthy = src.healthStatus === 'HEALTHY' || !src.healthStatus;
+                    const isDegraded = src.healthStatus === 'DEGRADED';
+                    const isFailing = src.healthStatus === 'FAILING';
+
+                    return (
+                      <div
+                        key={src.id}
+                        className={`glass-panel p-4 rounded-lg bg-[#0c0806]/40 flex flex-col gap-3 border ${
+                          src.isActive ? 'border-coffee-border/30' : 'border-zinc-800/50 opacity-60'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="space-y-1.5 min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-bold text-coffee-cream truncate">{src.name}</span>
+                              <span className="px-1.5 py-0.5 rounded text-[8px] font-mono bg-[#070403] text-coffee-accent border border-coffee-border/20">
+                                {src.format || 'RSS'}
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded text-[8px] font-mono bg-[#070403] text-coffee-text-muted border border-coffee-border/20">
+                                {src.category || 'General'}
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded text-[8px] font-mono bg-[#070403] text-coffee-text-muted border border-coffee-border/20">
+                                {src.type}
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded text-[8px] font-mono bg-[#070403] text-coffee-text-muted border border-coffee-border/20 flex items-center gap-0.5">
+                                <Clock className="w-2 h-2" /> {src.pollingInterval || 60}m
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-coffee-text-muted truncate font-mono">{src.url}</p>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {/* Ingestion status indicator */}
+                            <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-[#070403] border border-coffee-border/20 font-sans">
+                              <span className={`w-1.5 h-1.5 rounded-full ${
+                                isHealthy ? 'bg-emerald-500' : isDegraded ? 'bg-amber-500' : 'bg-red-500'
+                              }`} />
+                              <span className="text-[8px] font-mono font-bold uppercase text-coffee-cream">
+                                {src.healthStatus || 'HEALTHY'}
+                              </span>
+                            </div>
+
+                            {/* Active Toggle Switch */}
+                            <button
+                              onClick={() => toggleSourceActiveMutation.mutate({ id: src.id, isActive: !src.isActive })}
+                              className={`px-2 py-0.5 rounded text-[8.5px] font-mono font-bold uppercase border transition-colors ${
+                                src.isActive
+                                  ? 'bg-emerald-950/20 text-emerald-400 border-emerald-900/30 hover:bg-emerald-950/40'
+                                  : 'bg-zinc-900/40 text-zinc-500 border-zinc-800 hover:bg-zinc-800'
+                              }`}
+                            >
+                              {src.isActive ? 'Active' : 'Disabled'}
+                            </button>
+                          </div>
                         </div>
-                        <p className="text-[10px] text-coffee-text-muted truncate font-mono">{src.url}</p>
-                        <div className="text-[9px] text-coffee-text-muted">
-                          Fetched signals: <strong className="text-coffee-cream">{src._count?.signals || 0}</strong> | Last fetch: {src.lastFetched ? new Date(src.lastFetched).toLocaleDateString() : 'Never'}
+
+                        {src.lastError && (
+                          <div className="text-[9.5px] p-2 rounded bg-red-950/10 border border-red-900/20 text-red-300 font-mono flex items-start gap-1.5">
+                            <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
+                            <span className="break-all">{src.lastError}</span>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between items-center pt-2 border-t border-coffee-border/10 text-[9px] text-coffee-text-muted">
+                          <div>
+                            Fetched signals: <strong className="text-coffee-cream">{src._count?.signals || 0}</strong> | Last: {src.lastFetched ? new Date(src.lastFetched).toLocaleString() : 'Never'}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => testIngestSourceMutation.mutate({ id: src.id })}
+                              disabled={testIngestSourceMutation.isPending}
+                              className="p-1.5 rounded bg-[#130d0b] text-coffee-accent border border-coffee-border/20 hover:bg-coffee-border/30 transition-colors flex items-center gap-1 disabled:opacity-40"
+                              title="Test run ingestion for this source"
+                            >
+                              {testIngestSourceMutation.isPending ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <Play className="w-3 h-3" />
+                              )}
+                              <span className="text-[8px] font-bold">TEST RUN</span>
+                            </button>
+
+                            <button
+                              onClick={() => deleteSourceMutation.mutate({ id: src.id })}
+                              className="p-1.5 rounded bg-red-950/20 text-red-400 border border-red-900/30 hover:bg-red-950/40 hover:text-red-300 transition-colors shrink-0"
+                              title="Delete Source"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                      
-                      <button
-                        onClick={() => deleteSourceMutation.mutate({ id: src.id })}
-                        className="p-2 rounded bg-red-950/20 text-red-400 border border-red-900/30 hover:bg-red-950/40 hover:text-red-300 transition-colors shrink-0"
-                        title="Delete Source"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
