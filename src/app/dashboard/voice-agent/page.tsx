@@ -6,6 +6,10 @@ import { trpc } from '@/utils/trpc';
 import VoiceAgentPlayer from '@/components/VoiceAgentPlayer';
 import { Radio, Sparkles, Music, Coffee, Clock, Calendar, VolumeX, Volume2 } from 'lucide-react';
 
+import HubHeader from '@/components/HubHeader';
+import { Mic, Search } from 'lucide-react';
+import PremiumGate from '@/components/PremiumGate';
+
 export default function VoiceAgentPage() {
   const { data: briefings } = trpc.signals.getBriefings.useQuery();
   const [selectedTimeframe, setSelectedTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
@@ -144,22 +148,24 @@ export default function VoiceAgentPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto pb-12">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-              <Radio className="w-6 h-6 text-coffee-accent animate-pulse" />
-              Voice Broadcast Lounge
-            </h1>
-            <p className="text-xs text-coffee-text-muted">
-              Listen to custom-brewed intelligence briefings read out loud by your choice of AI Voice Hosts.
-            </p>
-          </div>
+        <HubHeader 
+          title="Intelligence Hub" 
+          subtitle="Listen to custom-brewed intelligence briefings read out loud by your choice of AI Voice Hosts."
+          icon={Search}
+          tabs={[
+            { name: 'Feed', href: '/brew-feed', icon: Radio },
+            { name: 'Search', href: '/coffee-search', icon: Search },
+            { name: 'Voice', href: '/dashboard/voice-agent', icon: Mic },
+          ]}
+        />
 
-          {/* Background Lounge Jazz Music Toggle */}
+        <PremiumGate featureName="AI Voice Broadcast Lounge" description="Listen to customized daily, weekly, and monthly audio briefs read out loud by custom AI voices with background cafe music.">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <span className="text-xs font-bold text-coffee-cream">Voice Broadcast Lounge</span>
+          
           <button
             onClick={handleToggleMusic}
-            className={`px-4 py-2 rounded-lg text-xs font-mono font-bold flex items-center gap-1.8 transition-all border ${
+            className={`px-4 py-2 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition-all border ${
               isCafeMusicOn
                 ? 'bg-coffee-accent/10 text-coffee-accent border-coffee-accent/40 shadow-lg shadow-coffee-accent/5'
                 : 'bg-[#0f0a08]/50 border-coffee-border/30 text-coffee-text-muted hover:text-coffee-cream hover:bg-coffee-card/50'
@@ -300,6 +306,7 @@ export default function VoiceAgentPage() {
             />
           </div>
         </div>
+        </PremiumGate>
       </div>
     </DashboardLayout>
   );

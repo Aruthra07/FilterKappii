@@ -3,9 +3,11 @@
 import React, { useState } from 'react';
 import DashboardLayout from '../dashboard/layout';
 import { trpc } from '@/utils/trpc';
-import { Search, Loader2, Cpu, Coffee, Briefcase, CreditCard, Radio, TrendingUp, HelpCircle } from 'lucide-react';
+import { Search, Loader2, Cpu, Coffee, Briefcase, CreditCard, Radio, TrendingUp, HelpCircle, Mic } from 'lucide-react';
 
 type SearchCategory = 'ALL' | 'SIGNALS' | 'COMPANIES' | 'MODELS' | 'CAREER' | 'FUNDING' | 'MARKET';
+
+import HubHeader from '@/components/HubHeader';
 
 export default function CoffeeSearchPage() {
   const [searchInput, setSearchInput] = useState('');
@@ -51,16 +53,16 @@ export default function CoffeeSearchPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-            <Search className="w-6 h-6 text-coffee-accent" />
-            Coffee Search
-          </h1>
-          <p className="text-xs text-coffee-text-muted">
-            Intelligent semantic search indexing model architectures, hiring trends, venture funding, and market movements.
-          </p>
-        </div>
+        <HubHeader 
+          title="Intelligence Hub" 
+          subtitle="Intelligent semantic search indexing model architectures, hiring trends, venture funding, and market movements."
+          icon={Search}
+          tabs={[
+            { name: 'Feed', href: '/brew-feed', icon: Radio },
+            { name: 'Search', href: '/coffee-search', icon: Search },
+            { name: 'Voice', href: '/dashboard/voice-agent', icon: Mic },
+          ]}
+        />
 
         {/* Search input Form */}
         <form onSubmit={handleSearchSubmit} className="relative">

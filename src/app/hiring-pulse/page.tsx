@@ -13,6 +13,9 @@ interface JobRole {
   skillsRequired: string[];
 }
 
+import HubHeader from '@/components/HubHeader';
+import { GraduationCap, BookOpen, Cpu } from 'lucide-react';
+
 export default function HiringPulsePage() {
   const [filterLocation, setFilterLocation] = useState<'ALL' | 'REMOTE' | 'SF'>('ALL');
 
@@ -60,17 +63,20 @@ export default function HiringPulsePage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-              <Briefcase className="w-6 h-6 text-coffee-accent animate-pulse" />
-              Hiring Pulse
-            </h1>
-            <p className="text-xs text-coffee-text-muted">
-              Live telemetry on AI engineering roles, top recruiting firms, remote ratios, and salary distributions.
-            </p>
-          </div>
+        <HubHeader 
+          title="Career Center" 
+          subtitle="Live telemetry on AI engineering roles, top recruiting firms, remote ratios, and salary distributions."
+          icon={GraduationCap}
+          tabs={[
+            { name: 'Research Lab', href: '/research-lab', icon: BookOpen },
+            { name: 'Career Roast', href: '/career-roast', icon: Briefcase },
+            { name: 'Skill Radar', href: '/skill-radar', icon: Cpu },
+            { name: 'Hiring Pulse', href: '/hiring-pulse', icon: TrendingUp },
+          ]}
+        />
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <span className="text-xs font-bold text-coffee-cream">AI Industry Opportunities</span>
           
           {/* Quick Filters */}
           <div className="flex gap-1.5 p-1 bg-coffee-dark rounded-lg border border-coffee-border/40 w-fit">

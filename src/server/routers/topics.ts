@@ -1,5 +1,6 @@
 import { router, protectedProcedure } from '../trpc';
 import { z } from 'zod';
+import { PLANS } from '@/lib/constants';
 
 export const topicsRouter = router({
   // Get all active topics for the logged in user
@@ -22,7 +23,35 @@ export const topicsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // 1. Create the base topic
+      // 1. Fetch current subscription and topic count to enforce plan limits
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.user.id },
+        include: {
+          subscription: true,
+          _count: { select: { topics: true } },
+        },
+      });
+
+      if (!user) {
+        throw new Error('User not found.');
+      }
+
+      const sub = user.subscription;
+      let maxTopics = PLANS.FREE.maxTopics;
+
+      if (sub?.status === 'ACTIVE') {
+        if (sub.stripePriceId === 'price_pro_monthly' || sub.stripePriceId?.includes('pro')) {
+          maxTopics = PLANS.PRO.maxTopics;
+        } else if (sub.stripePriceId === 'price_power_monthly' || sub.stripePriceId?.includes('power')) {
+          maxTopics = PLANS.POWER.maxTopics;
+        }
+      }
+
+      if (user._count.topics >= maxTopics) {
+        throw new Error(`You have reached the maximum number of topic feeds allowed for your plan (${maxTopics} topic${maxTopics === 1 ? '' : 's'}). Please upgrade your subscription to add more feeds.`);
+      }
+
+      // 2. Create the base topic
       const topic = await ctx.db.topic.create({
         data: {
           userId: ctx.user.id,

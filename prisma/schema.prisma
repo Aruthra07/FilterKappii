@@ -207,3 +207,14 @@ model EmailLog {
   error     String?
   createdAt DateTime @default(now())
 }
+
+model ContactMessage {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  subject    String?
+  message    String
+  status     String   @default("OPEN")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

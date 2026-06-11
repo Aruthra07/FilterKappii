@@ -1,31 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   Coffee, 
-  Cpu, 
-  TrendingUp, 
-  Bookmark, 
-  Settings, 
-  CreditCard, 
-  ShieldAlert, 
-  LogOut, 
-  Radio, 
-  FolderHeart,
-  ChevronRight,
-  MailOpen,
-  BookOpen,
-  Briefcase,
+  Calendar,
   Search,
-  Compass,
-  Users,
-  DollarSign,
-  Activity,
-  Zap,
-  Clock,
-  Mic
+  Bot,
+  TrendingUp,
+  GraduationCap,
+  FolderOpen,
+  CreditCard,
+  Mail,
+  Settings,
+  LogOut,
+  ChevronRight
 } from 'lucide-react';
 import { UserButton, SignOutButton } from '@clerk/nextjs';
 import { trpc } from '@/utils/trpc';
@@ -37,6 +27,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+
   const isMockClerk = process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'mock' ||
                       !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 
                       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('mock');
@@ -45,54 +36,70 @@ export default function DashboardLayout({
   const { data: subData, isLoading } = trpc.billing.getSubscriptionStatus.useQuery();
   const { label: atmosphereLabel } = useCafeAtmosphere();
 
-  const sections = [
-    {
-      title: 'Brewing Archives',
-      links: [
-        { name: 'Brewing Room', href: '/dashboard', icon: Coffee },
-        { name: 'Daily Brew', href: '/daily-brew', icon: MailOpen },
-        { name: 'Weekly Roast', href: '/weekly-roast', icon: Clock },
-        { name: 'Monthly Blend', href: '/monthly-blend', icon: BookOpen },
-        { name: 'Annual Reserve', href: '/annual-reserve', icon: ShieldAlert },
-      ]
-    },
-    {
-      title: 'Intelligence Lounges',
-      links: [
-        { name: 'Brew Feed', href: '/brew-feed', icon: Radio },
-        { name: 'Coffee Search', href: '/coffee-search', icon: Search },
-        { name: 'Voice Lounge', href: '/dashboard/voice-agent', icon: Mic },
-        { name: 'AI Radar Map', href: '/ai-radar', icon: Compass },
-        { name: 'Company Lounge', href: '/company-lounge', icon: Users },
-        { name: 'Model Roastery', href: '/model-roastery', icon: Cpu },
-      ]
-    },
-    {
-      title: 'Trackers & Pulse',
-      links: [
-        { name: 'Startup Café', href: '/startup-cafe', icon: Coffee },
-        { name: 'Funding Board', href: '/funding-board', icon: DollarSign },
-        { name: 'Research Lab', href: '/research-lab', icon: BookOpen },
-        { name: 'Career Roast', href: '/career-roast', icon: Briefcase },
-        { name: 'Skill Radar', href: '/skill-radar', icon: Activity },
-        { name: 'Hiring Pulse', href: '/hiring-pulse', icon: Zap },
-        { name: 'Market Signals', href: '/market-signals', icon: TrendingUp },
-      ]
-    },
-    {
-      title: 'Personal Vault',
-      links: [
-        { name: 'Topic Feeds', href: '/dashboard/topics', icon: FolderHeart },
-        { name: 'Saved Beans', href: '/saved-beans', icon: Bookmark },
-        { name: 'Billing & Plans', href: '/dashboard/billing', icon: CreditCard },
-      ]
-    }
+  // Primary destinations with their active matching routes
+  const mainSection = [
+    { name: 'Brewing Room', href: '/dashboard', icon: Coffee, activeMatches: ['/dashboard'] },
+    { name: 'Daily Brew', href: '/daily-brew', icon: Calendar, activeMatches: ['/daily-brew'] },
+    { name: 'Weekly Roast', href: '/weekly-roast', icon: Calendar, activeMatches: ['/weekly-roast'] },
+    { name: 'Monthly Blend', href: '/monthly-blend', icon: Calendar, activeMatches: ['/monthly-blend'] },
+    { name: 'Annual Reserve', href: '/annual-reserve', icon: Calendar, activeMatches: ['/annual-reserve'] },
   ];
+
+  const hubSection = [
+    { 
+      name: 'Intelligence Hub', 
+      href: '/dashboard/intelligence', 
+      icon: Search, 
+      activeMatches: ['/dashboard/intelligence', '/brew-feed', '/coffee-search', '/dashboard/voice-agent'] 
+    },
+    { 
+      name: 'AI & Industry Radar', 
+      href: '/dashboard/radar', 
+      icon: Bot, 
+      activeMatches: ['/dashboard/radar', '/ai-radar', '/company-lounge', '/model-roastery'] 
+    },
+    { 
+      name: 'Market Intelligence', 
+      href: '/dashboard/market', 
+      icon: TrendingUp, 
+      activeMatches: ['/dashboard/market', '/startup-cafe', '/funding-board', '/market-signals', '/signals'] 
+    },
+    { 
+      name: 'Career Center', 
+      href: '/dashboard/career', 
+      icon: GraduationCap, 
+      activeMatches: ['/dashboard/career', '/research-lab', '/career-roast', '/skill-radar', '/hiring-pulse'] 
+    },
+    { 
+      name: 'Personal Vault', 
+      href: '/dashboard/vault', 
+      icon: FolderOpen, 
+      activeMatches: ['/dashboard/vault', '/dashboard/topics', '/saved-beans'] 
+    },
+    { 
+      name: 'Billing & Plans', 
+      href: '/dashboard/billing', 
+      icon: CreditCard, 
+      activeMatches: ['/dashboard/billing'] 
+    },
+    { 
+      name: 'Contact Us', 
+      href: '/dashboard/contact', 
+      icon: Mail, 
+      activeMatches: ['/dashboard/contact'] 
+    },
+  ];
+
+  const isAdmin = !isLoading && subData && subData.role === 'ADMIN';
+
+  const isLinkActive = (matches: string[]) => {
+    return matches.some(route => pathname === route);
+  };
 
   return (
     <div className="flex min-h-screen bg-[#070403] text-f4eae4">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-coffee-border/30 bg-[#0f0a08]/90 flex flex-col justify-between fixed top-0 bottom-0 left-0 z-30">
+      <aside className="w-64 border-r border-coffee-border/30 bg-[#0f0a08]/95 flex flex-col justify-between fixed top-0 bottom-0 left-0 z-30">
         <div className="flex flex-col min-h-0 flex-1">
           {/* Logo */}
           <div className="h-16 border-b border-coffee-border/20 flex items-center px-6 gap-2 shrink-0">
@@ -106,56 +113,81 @@ export default function DashboardLayout({
           </div>
 
           {/* Scrollable Navigation Links */}
-          <nav className="flex-1 p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-140px)] scrollbar-none">
-            {sections.map((sec) => (
-              <div key={sec.title} className="space-y-1">
-                <div className="text-[9px] font-mono font-bold text-coffee-accent/60 uppercase tracking-widest px-3 py-1">
-                  {sec.title}
-                </div>
-                {sec.links.map((link) => {
-                  const Icon = link.icon;
-                  const isActive = pathname === link.href;
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className={`flex items-center justify-between px-3 py-1.5 rounded-md text-[11px] font-semibold tracking-wide transition-all ${
-                        isActive
-                          ? 'bg-coffee-accent text-[#090504] shadow-[0_2px_8px_rgba(194,136,84,0.25)]'
-                          : 'text-coffee-text-muted hover:bg-coffee-border/20 hover:text-coffee-cream'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Icon className="w-3.5 h-3.5 shrink-0" />
-                        <span>{link.name}</span>
-                      </div>
-                      {isActive && <ChevronRight className="w-3 h-3" />}
-                    </Link>
-                  );
-                })}
-              </div>
-            ))}
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)] scrollbar-none select-none">
+            {/* Main Section */}
+            <div className="space-y-1">
+              {mainSection.map((link) => {
+                const Icon = link.icon;
+                const active = isLinkActive(link.activeMatches);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`flex items-center justify-between px-3 py-2 rounded-md text-[11px] font-semibold tracking-wide transition-all ${
+                      active
+                        ? 'bg-coffee-accent text-[#090504] shadow-[0_2px_8px_rgba(194,136,84,0.25)]'
+                        : 'text-coffee-text-muted hover:bg-coffee-border/20 hover:text-coffee-cream'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span>{link.name}</span>
+                    </div>
+                    {active && <ChevronRight className="w-3 h-3" />}
+                  </Link>
+                );
+              })}
+            </div>
 
-            {/* Admin link - Check database user role */}
-            {!isLoading && subData && subData.role === 'ADMIN' && (
-              <div className="space-y-1">
-                <div className="text-[9px] font-mono font-bold text-red-500/60 uppercase tracking-widest px-3 py-1">
-                  Administration
+            {/* Separator */}
+            <hr className="border-coffee-border/20 my-3" />
+
+            {/* Hubs Section */}
+            <div className="space-y-1">
+              {hubSection.map((link) => {
+                const Icon = link.icon;
+                const active = isLinkActive(link.activeMatches);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`flex items-center justify-between px-3 py-2 rounded-md text-[11px] font-semibold tracking-wide transition-all ${
+                      active
+                        ? 'bg-coffee-accent text-[#090504] shadow-[0_2px_8px_rgba(194,136,84,0.25)]'
+                        : 'text-coffee-text-muted hover:bg-coffee-border/20 hover:text-coffee-cream'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span>{link.name}</span>
+                    </div>
+                    {active && <ChevronRight className="w-3 h-3" />}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Admin Section (Admin only) */}
+            {isAdmin && (
+              <>
+                <hr className="border-coffee-border/20 my-3" />
+                <div className="space-y-1">
+                  <Link
+                    href="/dashboard/admin"
+                    className={`flex items-center justify-between px-3 py-2 rounded-md text-[11px] font-semibold tracking-wide transition-all ${
+                      pathname === '/dashboard/admin'
+                        ? 'bg-red-950/40 text-red-200 border border-red-800/40'
+                        : 'text-coffee-text-muted hover:bg-coffee-border/20 hover:text-red-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Settings className="w-4 h-4 shrink-0" />
+                      <span>Administration</span>
+                    </div>
+                    {pathname === '/dashboard/admin' && <ChevronRight className="w-3 h-3" />}
+                  </Link>
                 </div>
-                <Link
-                  href="/dashboard/admin"
-                  className={`flex items-center justify-between px-3 py-1.5 rounded-md text-[11px] font-semibold tracking-wide transition-all ${
-                    pathname === '/dashboard/admin'
-                      ? 'bg-red-900/40 text-red-200 border border-red-800'
-                      : 'text-coffee-text-muted hover:bg-coffee-border/20 hover:text-red-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
-                    <span>Brewing Insights</span>
-                  </div>
-                </Link>
-              </div>
+              </>
             )}
           </nav>
         </div>
@@ -199,7 +231,6 @@ export default function DashboardLayout({
             </div>
           )}
         </div>
-
       </aside>
 
       {/* Main Content Area */}

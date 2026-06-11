@@ -18,6 +18,9 @@ interface Deal {
   coInvestors: string;
 }
 
+import HubHeader from '@/components/HubHeader';
+import { Coffee, Activity, Bot } from 'lucide-react';
+
 export default function FundingBoardPage() {
   const { data: signals, isLoading, refetch, isRefetching } = trpc.signals.getSignals.useQuery({ category: 'Finance' });
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
@@ -65,17 +68,20 @@ export default function FundingBoardPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-              <Landmark className="w-6 h-6 text-coffee-accent" />
-              Funding Board
-            </h1>
-            <p className="text-xs text-coffee-text-muted">
-              Interactive VC deal flow tracker, capital distributions, and lead syndicate partner registries.
-            </p>
-          </div>
+        <HubHeader 
+          title="Market Intelligence" 
+          subtitle="Interactive VC deal flow tracker, capital distributions, and lead syndicate partner registries."
+          icon={TrendingUp}
+          tabs={[
+            { name: 'Startups', href: '/startup-cafe', icon: Coffee },
+            { name: 'Funding', href: '/funding-board', icon: DollarSign },
+            { name: 'Signals', href: '/market-signals', icon: TrendingUp },
+            { name: 'Explorer', href: '/signals', icon: Activity },
+          ]}
+        />
+
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-coffee-cream">Venture Deal Flow</span>
           <button 
             onClick={() => refetch()}
             disabled={isLoading || isRefetching}

@@ -17,6 +17,9 @@ interface CompanyProfile {
   openRoles: string[];
 }
 
+import HubHeader from '@/components/HubHeader';
+import { Compass, Cpu, Bot } from 'lucide-react';
+
 export default function CompanyLoungePage() {
   const { data: trendsData, isLoading, refetch, isRefetching } = trpc.signals.getTrends.useQuery();
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('openai');
@@ -79,17 +82,19 @@ export default function CompanyLoungePage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-              <Users className="w-6 h-6 text-coffee-accent" />
-              Company Lounge
-            </h1>
-            <p className="text-xs text-coffee-text-muted">
-              Deep telemetry on venture rounds, product lineups, historical milestones, and hiring maps.
-            </p>
-          </div>
+        <HubHeader 
+          title="AI & Industry Radar" 
+          subtitle="Deep telemetry on venture rounds, product lineups, historical milestones, and hiring maps."
+          icon={Bot}
+          tabs={[
+            { name: 'AI Radar', href: '/ai-radar', icon: Compass },
+            { name: 'Companies', href: '/company-lounge', icon: Users },
+            { name: 'Models', href: '/model-roastery', icon: Cpu },
+          ]}
+        />
+
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-coffee-cream">Company Profiles & Venture Telemetry</span>
           <button 
             onClick={() => refetch()}
             disabled={isLoading || isRefetching}

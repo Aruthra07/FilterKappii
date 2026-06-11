@@ -17,6 +17,9 @@ interface Startup {
   headquarters: string;
 }
 
+import HubHeader from '@/components/HubHeader';
+import { Activity, Bot } from 'lucide-react';
+
 export default function StartupCafePage() {
   const [selectedStartup, setSelectedStartup] = useState<Startup | null>(null);
   const [filterStage, setFilterStage] = useState<'ALL' | 'ACCELERATED' | 'HIGH_VALUATION'>('ALL');
@@ -81,17 +84,20 @@ export default function StartupCafePage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-              <Coffee className="w-6 h-6 text-coffee-accent animate-pulse" />
-              Startup Café
-            </h1>
-            <p className="text-xs text-coffee-text-muted">
-              Discover emerging AI startups, total capital backing, active founders, and monthly team growth rates.
-            </p>
-          </div>
+        <HubHeader 
+          title="Market Intelligence" 
+          subtitle="Discover emerging AI startups, total capital backing, active founders, and monthly team growth rates."
+          icon={TrendingUp}
+          tabs={[
+            { name: 'Startups', href: '/startup-cafe', icon: Coffee },
+            { name: 'Funding', href: '/funding-board', icon: DollarSign },
+            { name: 'Signals', href: '/market-signals', icon: TrendingUp },
+            { name: 'Explorer', href: '/signals', icon: Activity },
+          ]}
+        />
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <span className="text-xs font-bold text-coffee-cream">AI Startup Ecosystem</span>
           
           {/* Quick Filters */}
           <div className="flex gap-1.5 p-1 bg-coffee-dark rounded-lg border border-coffee-border/40 w-fit">

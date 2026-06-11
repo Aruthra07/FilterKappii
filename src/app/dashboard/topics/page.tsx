@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import { trpc } from '@/utils/trpc';
 import { FolderHeart, Loader2, Plus, Trash2, ToggleLeft, ToggleRight, Info, AlertTriangle } from 'lucide-react';
 
+import HubHeader from '@/components/HubHeader';
+import { FolderOpen, Bookmark } from 'lucide-react';
+
 export default function TopicFeedsPage() {
   const { data: topics, isLoading, refetch } = trpc.topics.getTopics.useQuery();
   const subStatusQuery = trpc.billing.getSubscriptionStatus.useQuery();
@@ -79,14 +82,16 @@ export default function TopicFeedsPage() {
   };
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto h-full flex flex-col">
-      {/* Title */}
-      <div>
-        <h1 className="text-2xl font-display font-extrabold text-coffee-cream">Topic Feeds</h1>
-        <p className="text-xs text-coffee-text-muted font-sans">
-          Manage the exact keywords and subjects you want our filters to capture.
-        </p>
-      </div>
+    <div className="space-y-6 max-w-6xl mx-auto h-full flex flex-col">
+      <HubHeader 
+        title="Personal Vault" 
+        subtitle="Manage the exact keywords and subjects you want our filters to capture."
+        icon={FolderOpen}
+        tabs={[
+          { name: 'Topics', href: '/dashboard/topics', icon: FolderHeart },
+          { name: 'Saved Beans', href: '/saved-beans', icon: Bookmark },
+        ]}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Create Feed Form */}

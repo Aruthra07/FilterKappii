@@ -5,6 +5,9 @@ import DashboardLayout from '../dashboard/layout';
 import { trpc } from '@/utils/trpc';
 import { Briefcase, RefreshCw, Sparkles, TrendingUp, DollarSign, ArrowUpRight } from 'lucide-react';
 
+import HubHeader from '@/components/HubHeader';
+import { GraduationCap, BookOpen, Cpu } from 'lucide-react';
+
 export default function CareerRoastPage() {
   const { data: trendsData, isLoading, refetch, isRefetching } = trpc.signals.getTrends.useQuery();
 
@@ -17,15 +20,20 @@ export default function CareerRoastPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-              <Briefcase className="w-6 h-6 text-coffee-accent" />
-              Career Roast (Hiring & Skills)
-            </h1>
-            <p className="text-xs text-coffee-text-muted">Real-time stats on rising programming languages, average base salaries, and developer descriptions.</p>
-          </div>
+        <HubHeader 
+          title="Career Center" 
+          subtitle="Real-time stats on rising programming languages, average base salaries, and developer descriptions."
+          icon={GraduationCap}
+          tabs={[
+            { name: 'Research Lab', href: '/research-lab', icon: BookOpen },
+            { name: 'Career Roast', href: '/career-roast', icon: Briefcase },
+            { name: 'Skill Radar', href: '/skill-radar', icon: Cpu },
+            { name: 'Hiring Pulse', href: '/hiring-pulse', icon: TrendingUp },
+          ]}
+        />
+
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-coffee-cream">Hiring & Skills Roast</span>
           <button 
             onClick={() => refetch()}
             disabled={isLoading || isRefetching}

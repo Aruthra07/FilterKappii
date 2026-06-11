@@ -5,6 +5,9 @@ import DashboardLayout from '../dashboard/layout';
 import { trpc } from '@/utils/trpc';
 import { Bookmark, RefreshCw, Trash2, Calendar, ExternalLink, ShieldAlert } from 'lucide-react';
 
+import HubHeader from '@/components/HubHeader';
+import { FolderOpen, FolderHeart } from 'lucide-react';
+
 export default function SavedBeansPage() {
   const { data: bookmarks, isLoading, refetch, isRefetching } = trpc.signals.getBookmarks.useQuery();
   const deleteBookmarkMutation = trpc.signals.toggleBookmark.useMutation({
@@ -20,17 +23,18 @@ export default function SavedBeansPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-              <Bookmark className="w-6 h-6 text-coffee-accent" />
-              Saved Beans
-            </h1>
-            <p className="text-xs text-coffee-text-muted">
-              Your personal library of bookmarked signals, saved models, and compiled reports.
-            </p>
-          </div>
+        <HubHeader 
+          title="Personal Vault" 
+          subtitle="Your personal library of bookmarked signals, saved models, and compiled reports."
+          icon={FolderOpen}
+          tabs={[
+            { name: 'Topics', href: '/dashboard/topics', icon: FolderHeart },
+            { name: 'Saved Beans', href: '/saved-beans', icon: Bookmark },
+          ]}
+        />
+
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-coffee-cream">Vault Registry</span>
           <button 
             onClick={() => refetch()}
             disabled={isLoading || isRefetching}

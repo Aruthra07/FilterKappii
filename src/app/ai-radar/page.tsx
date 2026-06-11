@@ -5,22 +5,25 @@ import DashboardLayout from '../dashboard/layout';
 import EcosystemMap from '@/components/EcosystemMap';
 import { Compass, Sparkles, Network, ArrowRight } from 'lucide-react';
 
+import HubHeader from '@/components/HubHeader';
+import { Users, Cpu, Bot } from 'lucide-react';
+
 export default function AIRadarPage() {
   const [selectedNode, setSelectedNode] = useState<any>(null);
 
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-            <Compass className="w-6 h-6 text-coffee-accent animate-pulse" />
-            AI Radar Map
-          </h1>
-          <p className="text-xs text-coffee-text-muted">
-            Interactive visual network tracking capital flows, developer dependencies, and strategic corporate connections.
-          </p>
-        </div>
+        <HubHeader 
+          title="AI & Industry Radar" 
+          subtitle="Interactive visual network tracking capital flows, developer dependencies, and strategic corporate connections."
+          icon={Bot}
+          tabs={[
+            { name: 'AI Radar', href: '/ai-radar', icon: Compass },
+            { name: 'Companies', href: '/company-lounge', icon: Users },
+            { name: 'Models', href: '/model-roastery', icon: Cpu },
+          ]}
+        />
 
         {/* Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

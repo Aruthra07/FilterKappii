@@ -20,7 +20,7 @@ export class ResendEmailService implements IEmailService {
           Authorization: `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
-          from: 'FilterCoffee.ai <briefings@filtercoffee.ai>',
+          from: process.env.SENDER_EMAIL || 'FilterCoffee.ai <onboarding@resend.dev>',
           to,
           subject,
           html,

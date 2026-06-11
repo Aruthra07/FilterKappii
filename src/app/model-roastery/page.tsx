@@ -16,6 +16,9 @@ interface ModelRoastProfile {
   bestUse: string;
 }
 
+import HubHeader from '@/components/HubHeader';
+import { Compass, Users, Bot } from 'lucide-react';
+
 export default function ModelRoasteryPage() {
   const { data: trendsData, isLoading, refetch, isRefetching } = trpc.signals.getTrends.useQuery();
   const [selectedModelId, setSelectedModelId] = useState<string>('gpt-5');
@@ -73,17 +76,19 @@ export default function ModelRoasteryPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-              <Cpu className="w-6 h-6 text-coffee-accent" />
-              Model Roastery
-            </h1>
-            <p className="text-xs text-coffee-text-muted">
-              Deep telemetry comparison of context windows, parameter scales, and pricing calculators.
-            </p>
-          </div>
+        <HubHeader 
+          title="AI & Industry Radar" 
+          subtitle="Deep telemetry comparison of context windows, parameter scales, and pricing calculators."
+          icon={Bot}
+          tabs={[
+            { name: 'AI Radar', href: '/ai-radar', icon: Compass },
+            { name: 'Companies', href: '/company-lounge', icon: Users },
+            { name: 'Models', href: '/model-roastery', icon: Cpu },
+          ]}
+        />
+
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-coffee-cream">AI Models & Pricing Comparison</span>
           <button 
             onClick={() => refetch()}
             disabled={isLoading || isRefetching}

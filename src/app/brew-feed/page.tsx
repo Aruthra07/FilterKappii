@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import DashboardLayout from '../dashboard/layout';
 import { trpc } from '@/utils/trpc';
-import { Bookmark, BookmarkCheck, Clock, Radio, Award, AlertCircle, RefreshCw } from 'lucide-react';
+import { Bookmark, BookmarkCheck, Clock, Radio, Award, AlertCircle, RefreshCw, Search, Mic } from 'lucide-react';
+
+import HubHeader from '@/components/HubHeader';
 
 export default function BrewFeedPage() {
   const [category, setCategory] = useState<'AI' | 'Finance' | 'Career' | 'General' | undefined>(undefined);
@@ -32,15 +34,19 @@ export default function BrewFeedPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-              <Radio className="w-6 h-6 text-coffee-accent animate-pulse" />
-              Live Brew Feed
-            </h1>
-            <p className="text-xs text-coffee-text-muted">Real-time parsed and summarized intelligence stream for AI professionals.</p>
-          </div>
+        <HubHeader 
+          title="Intelligence Hub" 
+          subtitle="Real-time parsed and summarized intelligence stream for AI professionals."
+          icon={Search}
+          tabs={[
+            { name: 'Feed', href: '/brew-feed', icon: Radio },
+            { name: 'Search', href: '/coffee-search', icon: Search },
+            { name: 'Voice', href: '/dashboard/voice-agent', icon: Mic },
+          ]}
+        />
+
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-coffee-cream">Live Signals Stream</span>
           <button 
             onClick={() => refetch()}
             disabled={isLoading || isRefetching}

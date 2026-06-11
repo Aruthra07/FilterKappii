@@ -5,6 +5,9 @@ import DashboardLayout from '../dashboard/layout';
 import { trpc } from '@/utils/trpc';
 import { Search, Loader2, Radio, Calendar, Filter, Sparkles, SlidersHorizontal, ExternalLink } from 'lucide-react';
 
+import HubHeader from '@/components/HubHeader';
+import { Coffee, DollarSign, Activity, TrendingUp } from 'lucide-react';
+
 export default function SignalExplorerPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<'ALL' | 'AI' | 'Finance' | 'Career' | 'General'>('ALL');
@@ -34,15 +37,20 @@ export default function SignalExplorerPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-            <Radio className="w-6 h-6 text-coffee-accent animate-pulse" />
-            Signal Explorer
-          </h1>
-          <p className="text-xs text-coffee-text-muted">
-            Advanced multi-filter database explorer sync\'d with Qdrant vector sharding indexes.
-          </p>
+        <HubHeader 
+          title="Market Intelligence" 
+          subtitle="Advanced multi-filter database explorer sync'd with Qdrant vector sharding indexes."
+          icon={TrendingUp}
+          tabs={[
+            { name: 'Startups', href: '/startup-cafe', icon: Coffee },
+            { name: 'Funding', href: '/funding-board', icon: DollarSign },
+            { name: 'Signals', href: '/market-signals', icon: TrendingUp },
+            { name: 'Explorer', href: '/signals', icon: Activity },
+          ]}
+        />
+
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-coffee-cream">Signal Explorer Database</span>
         </div>
 
         {/* Filter Toolbar */}

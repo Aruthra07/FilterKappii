@@ -17,6 +17,9 @@ interface ResearchPaper {
   category: 'REASONING' | 'MULTIMODAL' | 'BIOINFORMATICS' | 'AGENTIC';
 }
 
+import HubHeader from '@/components/HubHeader';
+import { GraduationCap, Briefcase, Cpu, TrendingUp } from 'lucide-react';
+
 export default function ResearchLabPage() {
   const { data: signals, isLoading, refetch, isRefetching } = trpc.signals.getSignals.useQuery({ category: 'General' });
   const [selectedPaper, setSelectedPaper] = useState<ResearchPaper | null>(null);
@@ -63,17 +66,20 @@ export default function ResearchLabPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-              <BookOpen className="w-6 h-6 text-coffee-accent animate-pulse" />
-              Research Lab
-            </h1>
-            <p className="text-xs text-coffee-text-muted">
-              Explore ArXiv breakthrough papers, algorithm indexes, and academic citations impacting industry AI pipelines.
-            </p>
-          </div>
+        <HubHeader 
+          title="Career Center" 
+          subtitle="Explore ArXiv breakthrough papers, algorithm indexes, and academic citations impacting industry AI pipelines."
+          icon={GraduationCap}
+          tabs={[
+            { name: 'Research Lab', href: '/research-lab', icon: BookOpen },
+            { name: 'Career Roast', href: '/career-roast', icon: Briefcase },
+            { name: 'Skill Radar', href: '/skill-radar', icon: Cpu },
+            { name: 'Hiring Pulse', href: '/hiring-pulse', icon: TrendingUp },
+          ]}
+        />
+
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-coffee-cream">Publications & breakthroughs</span>
           <button 
             onClick={() => refetch()}
             disabled={isLoading || isRefetching}

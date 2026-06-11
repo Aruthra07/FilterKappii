@@ -3,7 +3,9 @@
 import React from 'react';
 import DashboardLayout from '../dashboard/layout';
 import { trpc } from '@/utils/trpc';
-import { TrendingUp, RefreshCw, Sparkles, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, RefreshCw, Sparkles, DollarSign, ArrowUpRight, ArrowDownRight, Coffee, Activity } from 'lucide-react';
+
+import HubHeader from '@/components/HubHeader';
 
 export default function MarketSignalsPage() {
   const { data: trendsData, isLoading, refetch, isRefetching } = trpc.signals.getTrends.useQuery();
@@ -19,15 +21,20 @@ export default function MarketSignalsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-coffee-accent animate-pulse" />
-              Real-Time Market Signals
-            </h1>
-            <p className="text-xs text-coffee-text-muted">Track NASDAQ indicators, AI stocks, Federal Reserve rate decisions, and tech economic metrics.</p>
-          </div>
+        <HubHeader 
+          title="Market Intelligence" 
+          subtitle="Track NASDAQ indicators, AI stocks, Federal Reserve rate decisions, and tech economic metrics."
+          icon={TrendingUp}
+          tabs={[
+            { name: 'Startups', href: '/startup-cafe', icon: Coffee },
+            { name: 'Funding', href: '/funding-board', icon: DollarSign },
+            { name: 'Signals', href: '/market-signals', icon: TrendingUp },
+            { name: 'Explorer', href: '/signals', icon: Activity },
+          ]}
+        />
+
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-coffee-cream">Real-Time Market Signals</span>
           <button 
             onClick={() => refetch()}
             disabled={isLoading || isRefetching}

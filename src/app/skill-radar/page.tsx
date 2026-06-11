@@ -15,6 +15,9 @@ interface Skill {
   description: string;
 }
 
+import HubHeader from '@/components/HubHeader';
+import { GraduationCap, Briefcase, Cpu } from 'lucide-react';
+
 export default function SkillRadarPage() {
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
 
@@ -80,15 +83,20 @@ export default function SkillRadarPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-display font-extrabold text-coffee-cream flex items-center gap-2">
-            <Activity className="w-6 h-6 text-coffee-accent animate-pulse" />
-            Skill Radar
-          </h1>
-          <p className="text-xs text-coffee-text-muted">
-            Interactive skill explorer map. Monitor talent supply trends, salary bounds, and learning paths.
-          </p>
+        <HubHeader 
+          title="Career Center" 
+          subtitle="Interactive skill explorer map. Monitor talent supply trends, salary bounds, and learning paths."
+          icon={GraduationCap}
+          tabs={[
+            { name: 'Research Lab', href: '/research-lab', icon: BookOpen },
+            { name: 'Career Roast', href: '/career-roast', icon: Briefcase },
+            { name: 'Skill Radar', href: '/skill-radar', icon: Cpu },
+            { name: 'Hiring Pulse', href: '/hiring-pulse', icon: TrendingUp },
+          ]}
+        />
+
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold text-coffee-cream">AI Skill Directory</span>
         </div>
 
         {/* Skills Grid */}
