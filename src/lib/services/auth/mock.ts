@@ -1,134 +1,85 @@
+import { cookies } from 'next/headers';
 import { IAuthService } from './interface';
 import { db } from '../../db';
-import { cookies } from 'next/headers';
 
 export class MockAuthService implements IAuthService {
   async getSessionUser(): Promise<any | null> {
-    try {
-      const cookieStore = await cookies();
-      const mockUserId = cookieStore.get('fc_session')?.value;
-      
-      if (!mockUserId) {
-        return null;
-      }
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('fc_session');
+    
+    if (!sessionCookie || !sessionCookie.value) {
+      return null;
+    }
 
-      return db.user.findUnique({
-        where: { id: mockUserId },
+    const email = sessionCookie.value;
+
+    try {
+      const user = await db.user.findUnique({
+        where: { email },
         include: { subscription: true },
       });
-    } catch (e) {
-      // Return null if cookie store is accessed in non-server context
+
+      if (user) {
+        return user;
+      }
+
+      // If mock user doesn't exist in DB, create them
+      const newUser = await db.user.create({
+        data: {
+          email,
+          name: email === 'founder@filtercoffee.ai' ? 'Founder' : 'Test User',
+          clerkId: `mock_${Math.random().toString(36).substr(2, 9)}`,
+          role: email === 'founder@filtercoffee.ai' ? 'ADMIN' : 'USER',
+        },
+        include: { subscription: true },
+      });
+
+      await db.subscription.create({
+        data: {
+          userId: newUser.id,
+          stripeCustomerId: `cus_mock_${Math.random().toString(36).substring(2, 11)}`,
+          status: 'ACTIVE',
+        }
+      });
+
+      return await db.user.findUnique({
+        where: { id: newUser.id },
+        include: { subscription: true },
+      });
+
+    } catch (error) {
+      console.error('Mock session fetch error:', error);
       return null;
     }
   }
 
   async signIn(email: string): Promise<{ success: boolean; user: any }> {
-    let user = await db.user.findUnique({
-      where: { email },
-      include: { subscription: true },
-    });
-
-    if (!user) {
-      // Create user automatically in mock mode to ease testing
-      user = await db.user.create({
-        data: {
-          email,
-          name: email.split('@')[0],
-          clerkId: 'mock_' + Math.random().toString(36).substring(2, 9),
-          role: email.includes('admin') || email.includes('founder') ? 'ADMIN' : 'USER',
-        },
-        include: { subscription: true },
-      });
-
-      // Default active subscription for mock accounts
-      await db.subscription.create({
-        data: {
-          userId: user.id,
-          stripeCustomerId: 'cus_mock_' + Math.random().toString(36).substring(2, 9),
-          status: 'ACTIVE',
-        }
-      });
-
-      // Re-fetch
-      user = await db.user.findUnique({
-        where: { id: user.id },
-        include: { subscription: true },
-      });
-    }
-
-    if (!user) {
-      throw new Error('Mock user not found.');
-    }
-
     const cookieStore = await cookies();
-    cookieStore.set('fc_session', user.id, { path: '/', httpOnly: true, maxAge: 60 * 60 * 24 * 7 }); // 7 days
-
-    await db.auditLog.create({
-      data: {
-        userId: user.id,
-        action: 'MOCK_SIGN_IN',
-        details: `User ${email} signed in via mock authentication.`,
-      },
+    cookieStore.set('fc_session', email, { 
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7 // 1 week
     });
-
-    return { success: true, user };
+    
+    return { success: true, user: { email } };
   }
 
   async signUp(email: string, name: string): Promise<{ success: boolean; user: any }> {
-    let user = await db.user.findUnique({ where: { email } });
-    if (user) {
-      throw new Error('Email already registered');
-    }
-
-    user = await db.user.create({
-      data: {
-        email,
-        name,
-        clerkId: 'mock_' + Math.random().toString(36).substring(2, 9),
-        role: email.includes('admin') || email.includes('founder') ? 'ADMIN' : 'USER',
-      },
-      include: { subscription: true },
-    });
-
-    await db.subscription.create({
-      data: {
-        userId: user.id,
-        stripeCustomerId: 'cus_mock_' + Math.random().toString(36).substring(2, 9),
-        status: 'ACTIVE',
-      }
-    });
-
     const cookieStore = await cookies();
-    cookieStore.set('fc_session', user.id, { path: '/', httpOnly: true, maxAge: 60 * 60 * 24 * 7 });
-
-    // Re-fetch
-    user = await db.user.findUnique({
-      where: { id: user.id },
-      include: { subscription: true },
+    cookieStore.set('fc_session', email, { 
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7 // 1 week
     });
-
-    if (!user) {
-      throw new Error('Mock user registration failed.');
-    }
-
-    await db.auditLog.create({
-      data: {
-        userId: user.id,
-        action: 'MOCK_SIGN_UP',
-        details: `User ${email} registered and signed in via mock authentication.`,
-      },
-    });
-
-    return { success: true, user };
+    
+    return { success: true, user: { email, name } };
   }
 
   async signOut(): Promise<{ success: boolean }> {
-    try {
-      const cookieStore = await cookies();
-      cookieStore.delete('fc_session');
-    } catch (e) {
-      // ignore
-    }
+    const cookieStore = await cookies();
+    cookieStore.delete('fc_session');
     return { success: true };
   }
 }

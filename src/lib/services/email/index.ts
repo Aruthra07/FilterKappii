@@ -1,21 +1,17 @@
 import { IEmailService } from './interface';
-import { MockEmailService } from './mock';
 import { ResendEmailService } from './resend';
 
-const emailProvider = process.env.EMAIL_PROVIDER || 'mock';
+let instance: IEmailService | null = null;
 
-let emailService: IEmailService;
-
-if (emailProvider === 'resend' && process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 'mock-resend-key') {
-  try {
-    emailService = new ResendEmailService();
-  } catch (e) {
-    console.error('Failed to initialize Resend service, falling back to mock email Logger:', e);
-    emailService = new MockEmailService();
+const emailService = new Proxy({} as IEmailService, {
+  get(target, prop) {
+    if (!instance) {
+      instance = new ResendEmailService();
+    }
+    const val = (instance as any)[prop];
+    return typeof val === 'function' ? val.bind(instance) : val;
   }
-} else {
-  emailService = new MockEmailService();
-}
+});
 
 export { emailService };
 export type { IEmailService };

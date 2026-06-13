@@ -1,16 +1,13 @@
 import { IAIService } from './interface';
-import { MockAIService } from './mock';
 
 export class AnthropicService implements IAIService {
   private apiKey: string;
-  private mockFallback: MockAIService;
 
   constructor() {
     this.apiKey = process.env.ANTHROPIC_API_KEY || '';
     if (!this.apiKey || this.apiKey === 'mock-anthropic-key') {
       throw new Error('ANTHROPIC_API_KEY must be configured to use AnthropicService');
     }
-    this.mockFallback = new MockAIService();
   }
 
   async generateText(options: { systemPrompt?: string; prompt: string; temperature?: number }): Promise<string> {
@@ -41,6 +38,6 @@ export class AnthropicService implements IAIService {
 
   // Anthropic does not offer vector embeddings, delegate to mock L2 normalized generator
   async generateEmbedding(text: string): Promise<number[]> {
-    return this.mockFallback.generateEmbedding(text);
+    throw new Error('Anthropic does not have an embedding model integrated. Please use Gemini for embeddings.');
   }
 }

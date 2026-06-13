@@ -1,16 +1,17 @@
 import { IStorageService } from './interface';
-import { MockStorageService } from './mock';
 import { S3StorageService } from './s3';
 
-const storageProvider = process.env.STORAGE_PROVIDER || 'mock';
+let instance: IStorageService | null = null;
 
-let storageService: IStorageService;
-
-if (storageProvider === 's3' && process.env.AWS_S3_BUCKET) {
-  storageService = new S3StorageService();
-} else {
-  storageService = new MockStorageService();
-}
+const storageService = new Proxy({} as IStorageService, {
+  get(target, prop) {
+    if (!instance) {
+      instance = new S3StorageService();
+    }
+    const val = (instance as any)[prop];
+    return typeof val === 'function' ? val.bind(instance) : val;
+  }
+});
 
 export { storageService };
 export type { IStorageService };

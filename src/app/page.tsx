@@ -1,91 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Check, ShieldCheck, Flame, Cpu, TrendingUp, Briefcase, Calendar, Zap } from 'lucide-react';
+import { ArrowRight, Check, ShieldCheck, Flame, Cpu, TrendingUp, Briefcase, Calendar, Zap, LayoutDashboard } from 'lucide-react';
+import { useAuth, UserButton } from '@clerk/nextjs';
 import CoffeeCup from '@/components/CoffeeCup';
 import SmoothScroll from '@/components/SmoothScroll';
-import VoiceAgentPlayer from '@/components/VoiceAgentPlayer';
 
 export default function LandingPage() {
+  const { isSignedIn, isLoaded } = useAuth();
+
   const isMockClerk = process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'mock' ||
                       !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 
                       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('mock');
 
-  const [hotTimeframe, setHotTimeframe] = useState<'today' | 'week' | 'month'>('today');
-
-  const getHotItems = () => {
-    if (hotTimeframe === 'today') {
-      return [
-        {
-          category: 'AI',
-          time: '2 hours ago',
-          title: 'OpenAI Releases GPT-5 Preview with Native Multi-Agent Orchestration',
-          content: 'The update standardizes native agent coordination directly in the API, allowing developers to define complex sub-agent state routing trees.'
-        },
-        {
-          category: 'Finance',
-          time: '5 hours ago',
-          title: 'Robotics Control Startup Physical Intelligence Closes $400M Seed',
-          content: 'Bezos Expeditions, OpenAI, and Thrive Capital lead the seed round at a 2.4 billion dollar post-money valuation, targeting general foundation control models.'
-        },
-        {
-          category: 'AI',
-          time: '9 hours ago',
-          title: 'DeepMind Introduces AlphaFold 3: Modeling Protein-DNA Interactions',
-          content: 'Allows structural and interaction predictions of DNA, RNA, and chemical compounds, cutting candidate compound validation times in silico.'
-        }
-      ];
-    }
-    if (hotTimeframe === 'week') {
-      return [
-        {
-          category: 'Finance',
-          time: '2 days ago',
-          title: 'Benchmark Leads $45M Series B for Qdrant Vector Databases',
-          content: 'Capital will scale real-time sharded vector partitioning for high-throughput streaming intelligence applications.'
-        },
-        {
-          category: 'Career',
-          time: '4 days ago',
-          title: 'AI Ingestion and Vector Sharding Skills Command 35% Salary Premium',
-          content: 'LinkedIn recruitment telemetry indicates shift in engineering demand from React view-layer developers to RAG-pipeline and middleware orchestrators.'
-        },
-        {
-          category: 'Finance',
-          time: '6 days ago',
-          title: 'Nvidia Stock Rises 4.2% on Strong Blackwell Production Forecasts',
-          content: 'Supply chain telemetry indicates record shipment yields of next-generation B200 accelerators, keeping tech multiple indices elevated.'
-        }
-      ];
-    }
-    return [
-      {
-        category: 'AI',
-        time: '2 weeks ago',
-        title: 'Multi-Modal Voice Streaming Latency Drops Below 150ms',
-        content: 'Native voice audio and video streaming integrations in Apple Intelligence and Gemini 1.5 Pro bypass text pipelines for conversational loops.'
-      },
-      {
-        category: 'Finance',
-        time: '3 weeks ago',
-        title: 'Microsoft Commits Additional $10B for Liquid-Cooled Datacenters',
-        content: 'Strategic partnership with hardware infrastructure providers secures gigawatt-scale power allocations for cluster expansions.'
-      },
-      {
-        category: 'AI',
-        time: '4 weeks ago',
-        title: 'Vector Sharding Standards Mature: pgvector vs Standalone Clusters',
-        content: 'Enterprise database architectures establish clear hybrid patterns, utilizing standalone vector spaces like Qdrant for real-time memory sharding.'
-      }
-    ];
-  };
-
-  const getHotScript = () => {
-    const items = getHotItems();
-    return `Here are the trending highlights for ${hotTimeframe === 'today' ? 'today' : hotTimeframe === 'week' ? 'this week' : 'this month'}. ${items.map((it, idx) => `Item ${idx + 1}, ${it.title}. ${it.content}`).join(' ')} That completes the highlights.`;
-  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -123,23 +52,36 @@ export default function LandingPage() {
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-coffee-text-muted">
           <Link href="#features" className="hover:text-coffee-accent transition-colors">Features</Link>
           <Link href="#pillars" className="hover:text-coffee-accent transition-colors">Intelligence</Link>
-          <Link href="#hot-spot" className="hover:text-coffee-accent transition-colors">Trending</Link>
-          <Link href="#sample" className="hover:text-coffee-accent transition-colors">Sample Briefing</Link>
           <Link href="#pricing" className="hover:text-coffee-accent transition-colors">Pricing</Link>
         </nav>
         <div className="flex items-center gap-4">
-          <Link 
-            href="/dashboard"
-            className="text-sm font-medium hover:text-coffee-accent transition-colors"
-          >
-            Dashboard
-          </Link>
-          <Link
-            href="/dashboard"
-            className="px-4 py-2 text-xs font-semibold bg-coffee-accent hover:bg-coffee-accent-hover text-[#090504] rounded-md transition-all flex items-center gap-1.5 shadow-[0_4px_14px_rgba(194,136,84,0.3)]"
-          >
-            Start Brewing <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          {isLoaded && isSignedIn ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="px-4 py-2 text-xs font-semibold bg-coffee-dark hover:bg-coffee-border/30 text-f4eae4 border border-coffee-border/50 rounded-md transition-all flex items-center gap-1.5"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" /> Dashboard
+              </Link>
+              <div className="bg-coffee-border/30 rounded-full p-0.5 border border-coffee-border/50">
+                <UserButton
+                  appearance={{
+                    elements: {
+                      userButtonAvatarBox: 'w-8 h-8 rounded-full',
+                    }
+                  }}
+                  afterSignOutUrl="/"
+                />
+              </div>
+            </>
+          ) : (
+            <Link
+              href="/sign-in"
+              className="px-4 py-2 text-xs font-semibold bg-coffee-accent hover:bg-coffee-accent-hover text-[#090504] rounded-md transition-all flex items-center gap-1.5 shadow-[0_4px_14px_rgba(194,136,84,0.3)]"
+            >
+              Start Brewing <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          )}
         </div>
       </header>
 
@@ -152,19 +94,21 @@ export default function LandingPage() {
             animate="visible"
             variants={containerVariants}
           >
-            <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-coffee-card border border-coffee-border/50 text-coffee-accent text-xs font-semibold tracking-wide">
-              <Zap className="w-3.5 h-3.5" /> Phase 1 Live - B2C Personal Intelligence Feed
-            </motion.div>
-            
             <motion.h1 
               variants={itemVariants} 
               className="text-4xl sm:text-5xl md:text-6xl font-display font-extrabold leading-[1.08] tracking-tight text-coffee-cream"
             >
-              Brewed Intelligence <br/>
-              <span className="bg-gradient-to-r from-coffee-accent via-coffee-accent-hover to-[#ecc19a] bg-clip-text text-transparent">
-                for Professionals.
+              FilterCoffee<span className="text-coffee-accent">.ai</span> <br/>
+              <span className="bg-gradient-to-r from-coffee-accent via-coffee-accent-hover to-[#ecc19a] bg-clip-text text-transparent text-3xl sm:text-4xl md:text-5xl block mt-4">
+                AI Intelligence Center for Professionals
               </span>
             </motion.h1>
+            <motion.p
+              variants={itemVariants}
+              className="text-lg font-bold text-coffee-accent uppercase tracking-wider"
+            >
+              Brewed Intelligence for the Modern AI Era
+            </motion.p>
 
             <motion.p 
               variants={itemVariants} 
@@ -174,18 +118,21 @@ export default function LandingPage() {
             </motion.p>
 
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 pt-2">
-              <Link
-                href="/dashboard"
-                className="px-6 py-3.5 bg-coffee-accent hover:bg-coffee-accent-hover text-background text-sm font-semibold rounded-md text-center transition-all flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(194,136,84,0.35)]"
-              >
-                Start Brewing <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="#sample"
-                className="px-6 py-3.5 glass-panel hover:bg-coffee-border/30 text-coffee-cream text-sm font-semibold rounded-md text-center transition-all flex items-center justify-center gap-2"
-              >
-                View Sample Briefing
-              </Link>
+              {isLoaded && isSignedIn ? (
+                <Link
+                  href="/dashboard"
+                  className="px-6 py-3.5 bg-coffee-accent hover:bg-coffee-accent-hover text-background text-sm font-semibold rounded-md text-center transition-all flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(194,136,84,0.35)]"
+                >
+                  Enter Dashboard <ArrowRight className="w-4 h-4" />
+                </Link>
+              ) : (
+                <Link
+                  href="/sign-in"
+                  className="px-6 py-3.5 bg-coffee-accent hover:bg-coffee-accent-hover text-background text-sm font-semibold rounded-md text-center transition-all flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(194,136,84,0.35)]"
+                >
+                  Start Brewing <ArrowRight className="w-4 h-4" />
+                </Link>
+              )}
             </motion.div>
           </motion.div>
 
@@ -576,137 +523,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Section 10: Sample Briefing */}
-      <section id="sample" className="py-24 px-6 md:px-12 bg-coffee-dark/30 border-t border-coffee-border/20">
-        <div className="max-w-4xl mx-auto space-y-12">
-          <div className="text-center space-y-4">
-            <h2 className="text-3xl font-display font-extrabold text-coffee-cream">The Morning Ritual Briefing</h2>
-            <p className="text-coffee-text-muted text-sm">Designed for high-information density, low-anxiety. Read in less than 5 minutes.</p>
-          </div>
 
-          <div className="glass-panel p-8 md:p-12 rounded-2xl shadow-2xl border border-coffee-border/60 max-w-3xl mx-auto relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-[3px] bg-coffee-accent" />
-            <div className="flex justify-between items-center border-b border-coffee-border/30 pb-6 mb-6">
-              <div>
-                <h4 className="font-display font-extrabold text-base tracking-wider text-coffee-cream">FILTERCOFFEE.AI</h4>
-                <p className="text-[10px] text-coffee-text-muted font-mono uppercase">Briefing // Daily Digest</p>
-              </div>
-              <div className="text-right text-xs text-coffee-text-muted font-mono">
-                Date: Jun 8, 2026
-              </div>
-            </div>
-
-            <div className="space-y-8 text-sm md:text-base">
-              <div className="space-y-3">
-                <h5 className="font-display font-bold text-coffee-accent text-sm md:text-base border-l-2 border-coffee-accent pl-3">
-                  What Changed
-                </h5>
-                <ul className="list-disc list-inside pl-1 space-y-2 text-coffee-cream/90 leading-relaxed text-xs md:text-sm">
-                  <li>
-                    <strong>OpenAI releases GPT-5 Preview:</strong> Standardizes native agent orchestration APIs, enabling direct multi-agent pipeline routing.
-                  </li>
-                  <li>
-                    <strong>Federal Reserve rates decision:</strong> Rates held steady at 5.25% as CPI numbers hover above long term target rates.
-                  </li>
-                  <li>
-                    <strong>Hiring surge in Systems Programming:</strong> Remote infrastructure openings requiring Rust grow by 28% quarter-on-quarter.
-                  </li>
-                </ul>
-              </div>
-
-              <div className="space-y-3">
-                <h5 className="font-display font-bold text-coffee-accent text-sm md:text-base border-l-2 border-coffee-accent pl-3">
-                  Why It Matters
-                </h5>
-                <ul className="list-disc list-inside pl-1 space-y-2 text-coffee-cream/90 leading-relaxed text-xs md:text-sm">
-                  <li>
-                    <strong>Agent-Native Architecture:</strong> Software teams must transition from writing imperative pipelines to orchestrating stateful agent interfaces.
-                  </li>
-                  <li>
-                    <strong>Cloud Margin Optimization:</strong> High hosting costs are driving migrations from resource-intensive runtimes (Node) to memory-safe compiled options (Rust).
-                  </li>
-                </ul>
-              </div>
-
-              <div className="space-y-3">
-                <h5 className="font-display font-bold text-coffee-accent text-sm md:text-base border-l-2 border-coffee-accent pl-3">
-                  Sources
-                </h5>
-                <div className="flex flex-wrap gap-4 text-xs font-mono pl-1">
-                  <a href="#" className="text-coffee-accent hover:underline">openai.com/blog</a>
-                  <a href="#" className="text-coffee-accent hover:underline">federalreserve.gov</a>
-                  <a href="#" className="text-coffee-accent hover:underline">github.com/trends</a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Section 10.5: Hot Spot & Voice agent */}
-      <section id="hot-spot" className="py-24 px-6 md:px-12 bg-[#090504] border-t border-coffee-border/20">
-        <div className="max-w-7xl mx-auto space-y-16">
-          <div className="text-center space-y-4 max-w-xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-coffee-card border border-coffee-border/50 text-coffee-accent text-[10px] font-bold tracking-wider uppercase">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> Trending Signals
-            </div>
-            <h2 className="text-3xl font-display font-extrabold text-coffee-cream">The Hot Spot Café</h2>
-            <p className="text-coffee-text-muted text-sm">Listen to or read what is trending in technology, venture capital, and career markets right now.</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Feed selection & cards */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="flex gap-2 border-b border-coffee-border/20 pb-3">
-                {(['today', 'week', 'month'] as const).map((time) => (
-                  <button
-                    key={time}
-                    onClick={() => setHotTimeframe(time)}
-                    className={`px-4 py-2 rounded-lg text-xs font-mono font-bold capitalize transition-all border ${
-                      hotTimeframe === time
-                        ? 'bg-coffee-accent text-[#0c0806] border-coffee-accent'
-                        : 'bg-[#0f0a08]/50 border-coffee-border/30 text-coffee-text-muted hover:text-coffee-cream'
-                    }`}
-                  >
-                    Hot {time === 'today' ? 'Today' : time === 'week' ? 'This Week' : 'This Month'}
-                  </button>
-                ))}
-              </div>
-
-              {/* Feed items list */}
-              <div className="space-y-4">
-                {getHotItems().map((item, idx) => (
-                  <div key={idx} className="glass-panel p-5 rounded-xl border border-coffee-border/30 bg-[#0f0a08]/75 space-y-2.5">
-                    <div className="flex justify-between items-center text-[9px] font-mono">
-                      <span className={`px-2 py-0.5 rounded border font-bold uppercase ${
-                        item.category === 'AI' 
-                          ? 'text-coffee-accent border-coffee-accent/20 bg-[#070403]'
-                          : item.category === 'Finance'
-                            ? 'text-emerald-400 border-emerald-500/10 bg-emerald-950/10'
-                            : 'text-coffee-text-muted border-coffee-border/30 bg-[#070403]'
-                      }`}>
-                        {item.category}
-                      </span>
-                      <span className="text-coffee-text-muted">{item.time}</span>
-                    </div>
-                    <h4 className="text-xs sm:text-sm font-bold text-coffee-cream leading-snug">{item.title}</h4>
-                    <p className="text-xs text-coffee-text-muted leading-relaxed">{item.content}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Voice player widget */}
-            <div className="lg:col-span-5 sticky top-24">
-              <VoiceAgentPlayer
-                key={hotTimeframe}
-                text={getHotScript()}
-                title={`Hot ${hotTimeframe === 'today' ? 'Today' : hotTimeframe === 'week' ? 'This Week' : 'This Month'} Highlights`}
-              />
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Section 11: Pricing */}
       <section id="pricing" className="py-24 px-6 md:px-12 border-t border-coffee-border/20">
@@ -832,8 +649,9 @@ export default function LandingPage() {
           </div>
           <p>© 2026 FilterCoffee.ai. Built for high-signal operators. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <Link href="#" className="hover:text-coffee-cream transition-colors">Privacy Policy</Link>
-            <Link href="#" className="hover:text-coffee-cream transition-colors">Terms of Service</Link>
+            <Link href="/privacy-policy" className="hover:text-coffee-cream transition-colors">Privacy Policy</Link>
+            <Link href="/terms-of-service" className="hover:text-coffee-cream transition-colors">Terms of Service</Link>
+            <a href="mailto:admin@filtercoffee.ai" className="hover:text-coffee-cream transition-colors">Contact Us</a>
           </div>
         </div>
       </footer>

@@ -1,21 +1,17 @@
 import { IPaymentService } from './interface';
-import { MockPaymentService } from './mock';
 import { StripePaymentService } from './stripe';
 
-const paymentProvider = process.env.PAYMENT_PROVIDER || 'mock';
+let instance: IPaymentService | null = null;
 
-let paymentService: IPaymentService;
-
-if (paymentProvider === 'stripe' && process.env.STRIPE_API_KEY && process.env.STRIPE_API_KEY !== 'mock-stripe-key') {
-  try {
-    paymentService = new StripePaymentService();
-  } catch (e) {
-    console.error('Failed to initialize Stripe service, falling back to mock payments:', e);
-    paymentService = new MockPaymentService();
+const paymentService = new Proxy({} as IPaymentService, {
+  get(target, prop) {
+    if (!instance) {
+      instance = new StripePaymentService();
+    }
+    const val = (instance as any)[prop];
+    return typeof val === 'function' ? val.bind(instance) : val;
   }
-} else {
-  paymentService = new MockPaymentService();
-}
+});
 
 export { paymentService };
 export type { IPaymentService };

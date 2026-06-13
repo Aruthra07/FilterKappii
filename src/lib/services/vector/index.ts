@@ -1,21 +1,17 @@
 import { IVectorService } from './interface';
-import { MockVectorService } from './mock';
 import { QdrantVectorService } from './qdrant';
 
-const vectorProvider = process.env.VECTOR_PROVIDER || 'mock';
+let instance: IVectorService | null = null;
 
-let vectorService: IVectorService;
-
-if (vectorProvider === 'qdrant' && process.env.QDRANT_URL && process.env.QDRANT_URL !== 'mock') {
-  try {
-    vectorService = new QdrantVectorService();
-  } catch (e) {
-    console.error('Failed to initialize Qdrant service, falling back to local file vector store:', e);
-    vectorService = new MockVectorService();
+const vectorService = new Proxy({} as IVectorService, {
+  get(target, prop) {
+    if (!instance) {
+      instance = new QdrantVectorService();
+    }
+    const val = (instance as any)[prop];
+    return typeof val === 'function' ? val.bind(instance) : val;
   }
-} else {
-  vectorService = new MockVectorService();
-}
+});
 
 export { vectorService };
 export type { IVectorService };

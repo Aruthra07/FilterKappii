@@ -2,11 +2,12 @@
 
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { signInAction } from '../actions/auth';
-import { Loader2, ArrowRight, ShieldCheck, Mail, User, Info } from 'lucide-react';
-import { SignIn } from '@clerk/nextjs';
+import { signUpAction } from '../../actions/auth';
+import { Loader2, ArrowRight, Mail, User, Info } from 'lucide-react';
+import { SignUp } from '@clerk/nextjs';
 
-export default function SignInPage() {
+export default function SignUpPage() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -15,28 +16,13 @@ export default function SignInPage() {
                       !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
                       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('mock');
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     startTransition(async () => {
       try {
-        const result = await signInAction(email);
-        if (result && 'error' in result) {
-          setError(result.error);
-        }
-      } catch (err: any) {
-        setError(err.message || 'An unexpected error occurred.');
-      }
-    });
-  };
-
-  const handleQuickLogin = (quickEmail: string) => {
-    setError(null);
-    setEmail(quickEmail);
-    startTransition(async () => {
-      try {
-        const result = await signInAction(quickEmail);
+        const result = await signUpAction(email, name);
         if (result && 'error' in result) {
           setError(result.error);
         }
@@ -70,7 +56,7 @@ export default function SignInPage() {
             </Link>
           </div>
 
-          <SignIn
+          <SignUp
             appearance={{
               variables: {
                 colorPrimary: '#c28854',
@@ -92,8 +78,10 @@ export default function SignInPage() {
                 formFieldLabel: 'text-xs font-semibold text-coffee-cream',
               }
             }}
-            signUpUrl="/sign-up"
-            forceRedirectUrl="/dashboard"
+            signInUrl="/sign-in"
+            forceRedirectUrl="/"
+            routing="path"
+            path="/sign-up"
           />
         </div>
       </div>
@@ -122,10 +110,10 @@ export default function SignInPage() {
             </span>
           </Link>
           <h2 className="text-lg font-display font-bold text-coffee-cream mt-6">
-            Sign in to your account
+            Create your profile
           </h2>
           <p className="text-xs text-coffee-text-muted">
-            Development Mode — No actual credentials required.
+            Development Mode — No verification required.
           </p>
         </div>
 
@@ -138,7 +126,29 @@ export default function SignInPage() {
             </div>
           )}
 
-          <form onSubmit={handleSignIn} className="space-y-4">
+          <form onSubmit={handleSignUp} className="space-y-4">
+            <div className="space-y-1.5">
+              <label htmlFor="name" className="block text-xs font-semibold text-coffee-cream">
+                Full Name
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-coffee-text-muted">
+                  <User className="w-4 h-4" />
+                </span>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="John Doe"
+                  disabled={isPending}
+                  className="block w-full pl-10 pr-4 py-2.5 bg-coffee-dark border border-coffee-border/60 rounded-lg text-xs text-f4eae4 placeholder-coffee-text-muted/50 focus:border-coffee-accent focus:ring-1 focus:ring-coffee-accent focus:outline-none transition-all"
+                />
+              </div>
+            </div>
+
             <div className="space-y-1.5">
               <label htmlFor="email" className="block text-xs font-semibold text-coffee-cream">
                 Email Address
@@ -169,57 +179,23 @@ export default function SignInPage() {
               {isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Brewing session...</span>
+                  <span>Registering...</span>
                 </>
               ) : (
                 <>
-                  <span>Sign In</span>
+                  <span>Create Account</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
-
-          {/* Quick Login Accounts */}
-          <div className="space-y-3 pt-2 border-t border-coffee-border/30">
-            <span className="block text-[10px] font-mono uppercase text-coffee-text-muted tracking-wider">
-              Quick Dev Access
-            </span>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                disabled={isPending}
-                onClick={() => handleQuickLogin('founder@filtercoffee.ai')}
-                className="p-3 bg-coffee-dark hover:bg-coffee-border/30 border border-coffee-border/60 rounded-lg text-left transition-all group"
-              >
-                <div className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-coffee-accent" />
-                  <span className="text-[10px] font-bold text-coffee-cream">Founder</span>
-                </div>
-                <span className="block text-[9px] text-coffee-text-muted mt-1 truncate">founder@filtercoffee.ai</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={isPending}
-                onClick={() => handleQuickLogin('reader@filtercoffee.ai')}
-                className="p-3 bg-coffee-dark hover:bg-coffee-border/30 border border-coffee-border/60 rounded-lg text-left transition-all group"
-              >
-                <div className="flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-coffee-accent" />
-                  <span className="text-[10px] font-bold text-coffee-cream">Regular User</span>
-                </div>
-                <span className="block text-[9px] text-coffee-text-muted mt-1 truncate">reader@filtercoffee.ai</span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Footer Link */}
         <p className="text-center text-xs text-coffee-text-muted">
-          Don't have an account?{' '}
-          <Link href="/sign-up" className="text-coffee-accent hover:text-coffee-accent-hover font-medium underline underline-offset-4 transition-colors">
-            Sign up (Mock)
+          Already have an account?{' '}
+          <Link href="/sign-in" className="text-coffee-accent hover:text-coffee-accent-hover font-medium underline underline-offset-4 transition-colors">
+            Sign in (Mock)
           </Link>
         </p>
       </div>

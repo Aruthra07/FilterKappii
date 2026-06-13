@@ -2,9 +2,9 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import type { NextRequest, NextFetchEvent } from 'next/server';
 
-const isMockClerk = process.env.AUTH_PROVIDER !== 'clerk' ||
-                    !process.env.CLERK_SECRET_KEY || 
-                    process.env.CLERK_SECRET_KEY.includes('mock');
+const isMockClerk = process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'mock' ||
+                    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 
+                    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('mock');
 
 const isPublicRoute = createRouteMatcher([
   '/',
@@ -38,9 +38,7 @@ export function proxy(request: NextRequest, event: NextFetchEvent) {
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
     '/((?!_next|[^?]*\\.[^?]*$).*)',
-    // Always run for API routes
     '/(api|trpc)(.*)',
   ],
 };

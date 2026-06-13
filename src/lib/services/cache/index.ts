@@ -1,16 +1,17 @@
 import { ICacheService } from './interface';
-import { MockCacheService } from './mock';
 import { RedisCacheService } from './redis';
 
-const cacheProvider = process.env.CACHE_PROVIDER || 'mock';
+let instance: ICacheService | null = null;
 
-let cacheService: ICacheService;
-
-if (cacheProvider === 'redis' && process.env.REDIS_URL && process.env.REDIS_URL !== 'mock') {
-  cacheService = new RedisCacheService();
-} else {
-  cacheService = new MockCacheService();
-}
+const cacheService = new Proxy({} as ICacheService, {
+  get(target, prop) {
+    if (!instance) {
+      instance = new RedisCacheService();
+    }
+    const val = (instance as any)[prop];
+    return typeof val === 'function' ? val.bind(instance) : val;
+  }
+});
 
 export { cacheService };
 export type { ICacheService };

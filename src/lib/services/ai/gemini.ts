@@ -1,16 +1,13 @@
 import { IAIService } from './interface';
-import { MockAIService } from './mock';
 
 export class GeminiService implements IAIService {
   private apiKey: string;
-  private mockFallback: MockAIService;
 
   constructor() {
     this.apiKey = process.env.GEMINI_API_KEY || '';
     if (!this.apiKey || this.apiKey === 'mock-gemini-key') {
       throw new Error('GEMINI_API_KEY must be configured to use GeminiService');
     }
-    this.mockFallback = new MockAIService();
   }
 
   async generateText(options: { systemPrompt?: string; prompt: string; temperature?: number }): Promise<string> {
@@ -80,8 +77,8 @@ export class GeminiService implements IAIService {
       }
       return values;
     } catch (e: any) {
-      console.error('Gemini embedding generation failed, falling back to deterministic math:', e);
-      return this.mockFallback.generateEmbedding(text);
+      console.error('Gemini embedding generation failed:', e);
+      throw e;
     }
   }
 

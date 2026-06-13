@@ -3,34 +3,42 @@ import { getEmbedding, cosineSimilarity } from './embeddings';
 import { upsertSignal, searchSimilarSignals } from './qdrant';
 import { generateText } from './llm';
 import { emailService } from './services/email';
+import Parser from 'rss-parser';
+import sanitizeHtml from 'sanitize-html';
 
 export async function sendEmail(to: string, subject: string, html: string) {
   return emailService.sendEmail(to, subject, html);
 }
 
 
-// Simple XML helper to extract RSS items without heavy libraries
-function parseRss(xmlText: string) {
-  const items: Array<{ title: string; content: string; url: string; publishedAt: Date }> = [];
-  const itemMatches = xmlText.match(/<item>([\s\S]*?)<\/item>/g);
-  if (!itemMatches) return items;
+const rssParser = new Parser({
+  customFields: {
+    item: ['category', 'description', 'content:encoded', 'pubDate'],
+  }
+});
 
-  for (const itemXml of itemMatches) {
-    const title = itemXml.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/)?.[1] ||
-                  itemXml.match(/<title>([\s\S]*?)<\/title>/)?.[1] || '';
-    const link = itemXml.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '';
-    const description = itemXml.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/)?.[1] ||
-                        itemXml.match(/<description>([\s\S]*?)<\/description>/)?.[1] || '';
-    const pubDateStr = itemXml.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1] || '';
-    
-    if (title && link) {
-      items.push({
-        title: title.trim(),
-        content: description.trim().replace(/<[^>]*>/g, ''), // strip html tags
-        url: link.trim(),
-        publishedAt: pubDateStr ? new Date(pubDateStr) : new Date(),
-      });
+export async function parseRss(xmlText: string) {
+  const items: Array<{ title: string; content: string; url: string; publishedAt: Date }> = [];
+  try {
+    const feed = await rssParser.parseString(xmlText);
+    for (const item of feed.items) {
+      if (item.title && item.link) {
+        const rawContent = item['content:encoded'] || item.content || item.description || '';
+        const cleanContent = sanitizeHtml(rawContent, {
+          allowedTags: [], // Strip all HTML to prevent XSS
+          allowedAttributes: {}
+        }).trim();
+
+        items.push({
+          title: item.title.trim(),
+          content: cleanContent,
+          url: item.link.trim(),
+          publishedAt: item.isoDate ? new Date(item.isoDate) : (item.pubDate ? new Date(item.pubDate) : new Date()),
+        });
+      }
     }
+  } catch (error) {
+    console.error('[Ingestion] XML parse error:', error);
   }
   return items;
 }
@@ -54,7 +62,7 @@ export async function ingestSource(sourceId: string) {
 
       if (source.format === 'RSS') {
         const text = await response.text();
-        items = parseRss(text);
+        items = await parseRss(text);
       } else if (source.format === 'API') {
         const data = await response.json();
         const rawItems = Array.isArray(data) ? data : (data.items || data.articles || data.data || []);
@@ -65,9 +73,10 @@ export async function ingestSource(sourceId: string) {
             const url = raw.url || raw.link || raw.href || source.url;
             const publishedAt = raw.publishedAt || raw.pubDate || raw.date || new Date();
             if (title) {
+              const cleanContent = sanitizeHtml(String(content), { allowedTags: [], allowedAttributes: {} }).trim();
               items.push({
                 title: String(title).trim(),
-                content: String(content).trim().replace(/<[^>]*>/g, ''),
+                content: cleanContent,
                 url: String(url).trim(),
                 publishedAt: new Date(publishedAt),
               });
@@ -93,12 +102,8 @@ export async function ingestSource(sourceId: string) {
     ingestionError = error.message || String(error);
   }
 
-  // Fallback to rich mock data if no items were parsed or it is a placeholder URL
-  let isUsingFallback = false;
-  if (items.length === 0) {
-    console.log(`[Ingestion] Generating mock signals for source type: ${source.type}`);
-    items = getMockSourceItems(source.type, source.name);
-    isUsingFallback = true;
+  if (items.length === 0 && !ingestionError) {
+    ingestionError = "No items parsed from source feed";
   }
 
   let signalsAdded = 0;
@@ -199,7 +204,7 @@ Output ONLY the raw JSON. Do not write markdown tags or block quotes.`;
     where: { id: source.id },
     data: {
       lastFetched: new Date(),
-      healthStatus: ingestionError ? (isUsingFallback ? 'DEGRADED' : 'FAILING') : 'HEALTHY',
+      healthStatus: ingestionError ? 'FAILING' : 'HEALTHY',
       lastError: ingestionError,
     },
   });
@@ -369,86 +374,4 @@ export async function runAllIngestions() {
   }
 }
 
-// Generate high quality mock signals depending on source type
-function getMockSourceItems(type: string, name: string) {
-  const timestamp = new Date();
-  
-  if (type === 'AI') {
-    return [
-      {
-        title: 'OpenAI Launches GPT-5 Preview with Native Multi-Agent Orchestration',
-        content: 'OpenAI has released GPT-5 Preview to developers. The model features native agent coordination, allowing developers to define complex sub-agent hierarchies directly through the API. Performance on reasoning and planning benchmarks shows a 35% improvement over GPT-4o.',
-        url: 'https://openai.com/blog/gpt-5-preview-agent-orchestration',
-        publishedAt: timestamp,
-      },
-      {
-        title: 'Anthropic Unveils Claude 3.5 Opus with Deep Context Graph Routing',
-        content: 'Anthropic has announced Claude 3.5 Opus. The highlight of this release is Graph Routing, which allows the model to map dependencies in long context window inputs, leading to a massive drop in hallucination rates on massive source documentation repositories.',
-        url: 'https://anthropic.com/news/claude-3-5-opus',
-        publishedAt: timestamp,
-      },
-      {
-        title: 'Mistral AI Releases Pixtral Large: Open-Weights 123B Vision Model',
-        content: 'Mistral AI, in collaboration with Hugging Face, has released Pixtral Large, an open-weights multimodal model boasting 123 billion parameters. It scores highly on visual reasoning and PDF chart analysis, competing directly with proprietary models.',
-        url: 'https://mistral.ai/news/pixtral-large-vision',
-        publishedAt: timestamp,
-      }
-    ];
-  }
-  
-  if (type === 'Finance') {
-    return [
-      {
-        title: 'Federal Reserve Holds Interest Rates Steady, Citing Sticky Core Inflation',
-        content: 'The Federal Reserve Open Market Committee announced it will maintain interest rates at current levels. Chairman Powell stated that while employment remains strong, core service inflation remains sticky, indicating rate cuts may be pushed into the fourth quarter.',
-        url: 'https://federalreserve.gov/news/interest-rate-june-2026',
-        publishedAt: timestamp,
-      },
-      {
-        title: 'Qdrant Raises $45M Series B for Real-Time Vector Database Sharding',
-        content: 'Vector database startup Qdrant announced a $45M Series B funding round led by Benchmark. The capital will be used to build self-healing partitioned vector architectures capable of handling real-time indexing for billions of streaming telemetry events.',
-        url: 'https://techcrunch.com/qdrant-series-b-45m',
-        publishedAt: timestamp,
-      },
-      {
-        title: 'Tech Stocks Correction: Nasdaq Down 2.4% as AI Capex Rises',
-        content: 'Major technology stock indices faced corrections today, with the Nasdaq index dropping 2.4%. Wall Street analysts cite concerns over rising AI capital expenditure (Capex) amongst hyperscalers compared to immediate consumer adoption software monetization.',
-        url: 'https://bloomberg.com/news/tech-market-correction-capex',
-        publishedAt: timestamp,
-      }
-    ];
-  }
 
-  if (type === 'Career') {
-    return [
-      {
-        title: 'Demand for Rust Engineers Grows 28% Driven by Cloud Run-Time Cost Savings',
-        content: 'A job market report from LinkedIn shows a 28% year-on-year increase in job postings requesting Rust. Companies are actively migrating cloud-native microservices from Node.js/Python to Rust to reduce memory footprint and Serverless execution costs.',
-        url: 'https://linkedin.com/reports/rust-demand-grow-cloud',
-        publishedAt: timestamp,
-      },
-      {
-        title: 'The Shift to AI Orchestration Engineers: New Tech Role Emerges',
-        content: 'Recruiting agencies report a surge in demand for "AI Orchestration Engineers." Unlike pure data scientists, this role focuses on constructing stateful agents, setting up semantic caching, indexing vector databases, and managing rate limits.',
-        url: 'https://hiringtrends.com/roles/ai-orchestration-engineers',
-        publishedAt: timestamp,
-      },
-      {
-        title: 'Remote Hybrid Models Settle at 3-Days in Office for Tech Hubs',
-        content: 'A national workplace study reveals that tech companies in San Francisco, Seattle, and New York have solidified hybrid attendance schedules, settling on a 3-days in office and 2-days remote rhythm as employee churn stabilizing factor.',
-        url: 'https://workplaces.org/reports/hybrid-tech-hubs-stabilize',
-        publishedAt: timestamp,
-      }
-    ];
-  }
-
-  // General news
-  return [
-    {
-      title: 'GitHub Trending Report: Declarative Agent Configurations Dominate OSS',
-      content: 'The Github trending page shows that open-source repositories built around declarative YAML configurations for AI agent behaviors are receiving the highest star growth, replacing traditional imperative typescript agent code.',
-      url: 'https://github.com/trending/oss-agent-yaml',
-      publishedAt: timestamp,
-    }
-  ];
-}

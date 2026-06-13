@@ -223,7 +223,7 @@ export default function DashboardLayout({
             </Link>
           ) : (
             <div className="ml-2 shrink-0">
-              <SignOutButton>
+              <SignOutButton redirectUrl="/">
                 <button className="text-coffee-text-muted hover:text-coffee-accent transition-colors">
                   <LogOut className="w-4 h-4" />
                 </button>

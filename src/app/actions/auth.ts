@@ -14,7 +14,7 @@ export async function signInAction(email: string) {
     return { error: error.message || 'Failed to sign in.' };
   }
 
-  redirect('/dashboard');
+  redirect('/');
 }
 
 export async function signUpAction(email: string, name: string) {
@@ -31,7 +31,7 @@ export async function signUpAction(email: string, name: string) {
     return { error: error.message || 'Failed to sign up.' };
   }
 
-  redirect('/dashboard');
+  redirect('/');
 }
 
 export async function signOutAction() {

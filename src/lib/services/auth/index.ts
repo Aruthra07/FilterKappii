@@ -1,16 +1,23 @@
 import { IAuthService } from './interface';
-import { MockAuthService } from './mock';
 import { ClerkAuthService } from './clerk';
 
-const authProvider = process.env.AUTH_PROVIDER || 'mock';
+import { MockAuthService } from './mock';
 
-let authService: IAuthService;
+let instance: IAuthService | null = null;
 
-if (authProvider === 'clerk' && process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.includes('mock')) {
-  authService = new ClerkAuthService();
-} else {
-  authService = new MockAuthService();
-}
+const authService = new Proxy({} as IAuthService, {
+  get(target, prop) {
+    if (!instance) {
+      if (process.env.AUTH_PROVIDER === 'mock' || process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'mock') {
+        instance = new MockAuthService();
+      } else {
+        instance = new ClerkAuthService();
+      }
+    }
+    const val = (instance as any)[prop];
+    return typeof val === 'function' ? val.bind(instance) : val;
+  }
+});
 
 export { authService };
 export type { IAuthService };
